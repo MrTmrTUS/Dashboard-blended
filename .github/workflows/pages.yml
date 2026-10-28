@@ -1,7 +1,11 @@
 name: Triển khai GitHub Pages
 
-# Bật một lần: Settings › Pages › Build and deployment › Source: GitHub Actions.
-# Chạy khi có push lên nhánh mặc định của repo (dù tên là gì) hoặc khi bấm "Run workflow".
+# Dù Settings › Pages › Source chọn cách nào, trang có cùng đường dẫn:
+#   https://<tài-khoản>.github.io/Dashboard-blended/      → index.html tự chuyển tới web/
+#   https://<tài-khoản>.github.io/Dashboard-blended/web/  → dashboard
+# - "Deploy from a branch" (nhánh mặc định, thư mục / (root)): GitHub tự đăng cả nhánh, tệp
+#   .nojekyll giữ nguyên tệp thay vì dựng bằng Jekyll; quy trình này chỉ chạy kiểm thử.
+# - "GitHub Actions": quy trình này kiểm thử xong mới đăng, và chỉ đăng index.html + web/.
 on:
   push:
   workflow_dispatch:
@@ -20,7 +24,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
     outputs:
-      enabled: ${{ steps.pages.outputs.enabled }}
+      deploy: ${{ steps.pages.outputs.deploy }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -28,21 +32,26 @@ jobs:
           node-version: 22
       - name: Kiểm thử trước khi triển khai
         run: npm test
-      - name: Kiểm tra GitHub Pages đã bật chưa
+      - name: Xem Settings › Pages đang chọn cách triển khai nào
         id: pages
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if gh api "repos/${{ github.repository }}/pages" --silent 2>/dev/null; then
-            echo "enabled=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::GitHub Pages chưa bật – vào Settings › Pages › Source: GitHub Actions rồi chạy lại quy trình này."
-          fi
+          build_type=$(gh api "repos/${{ github.repository }}/pages" --jq .build_type 2>/dev/null || true)
+          case "$build_type" in
+            workflow)
+              echo "deploy=true" >> "$GITHUB_OUTPUT" ;;
+            legacy)
+              echo "deploy=false" >> "$GITHUB_OUTPUT"
+              echo "::notice::Pages đang chọn 'Deploy from a branch' nên GitHub tự đăng nhánh; quy trình này chỉ kiểm thử." ;;
+            *)
+              echo "deploy=false" >> "$GITHUB_OUTPUT"
+              echo "::notice::GitHub Pages chưa bật – vào Settings › Pages chọn Source rồi chạy lại quy trình này." ;;
+          esac
 
   deploy:
     needs: check
-    if: needs.check.outputs.enabled == 'true'
+    if: needs.check.outputs.deploy == 'true'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -50,8 +59,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      - name: Gom trang (index.html chuyển hướng + web/)
+        run: |
+          mkdir _site
+          cp index.html _site/
+          cp -R web _site/web
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: web
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v4

@@ -39,11 +39,18 @@ Chạy 30 kiểm thử đơn vị của bộ tính toán (đáp số tính tay �
 
 ## Đưa lên GitHub Pages
 
-1. Vào **Settings › Pages › Build and deployment**, chọn **Source: GitHub Actions** (làm một lần).
-2. Vào tab **Actions › Triển khai GitHub Pages › Run workflow** (hoặc push một commit lên nhánh mặc định).
-3. Quy trình `.github/workflows/pages.yml` chạy kiểm thử rồi triển khai thư mục `web/`. Trang có dạng `https://<tài-khoản>.github.io/Dashboard-blended/`.
+Vào **Settings › Pages › Build and deployment**, chọn một trong hai cách (làm một lần):
 
-Quy trình luôn triển khai từ **nhánh mặc định** của repo, nên vẫn đúng nếu sau này đổi nhánh mặc định sang `main`. Khi Pages chưa bật, quy trình chỉ chạy kiểm thử và ghi chú nhắc bật Pages, không báo lỗi.
+| Source | Chọn thêm | Ai đăng trang |
+|---|---|---|
+| **Deploy from a branch** | Branch: nhánh mặc định (hiện là `claude/busy-euler-bp30mo`), thư mục **/ (root)** › Save | GitHub tự đăng lại sau mỗi lần push |
+| **GitHub Actions** | Tab **Actions › Triển khai GitHub Pages › Run workflow** | Quy trình `.github/workflows/pages.yml` chạy kiểm thử xong mới đăng |
+
+Sau 1 – 2 phút (theo dõi ở tab **Actions**), mở **<https://mrtmrtus.github.io/Dashboard-blended/>**: trang gốc tự chuyển vào dashboard ở `…/Dashboard-blended/web/`. Hai cách cho cùng đường dẫn. Tệp `.nojekyll` ở gốc repo giữ GitHub không dựng lại repo bằng Jekyll – thiếu nó, trang gốc chỉ hiện nội dung README.
+
+Nếu sau này đổi nhánh mặc định sang `main`: cách “Deploy from a branch” cần chọn lại nhánh trong Settings › Pages; cách “GitHub Actions” tự theo nhánh mặc định. Khi Pages chưa bật hoặc đang chọn “Deploy from a branch”, quy trình `pages.yml` chỉ chạy kiểm thử, không báo lỗi.
+
+Gặp **404**: đợi lượt triển khai trong tab Actions chạy xong rồi tải lại trang (Ctrl + F5), và gõ đúng chữ hoa – thường `Dashboard-blended`.
 
 Mọi đường dẫn đều tương đối và định tuyến bằng `#/…`, nên trang cũng chạy được trên máy chủ tĩnh của Trường mà không cần cấu hình thêm.
 
