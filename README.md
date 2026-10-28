@@ -39,9 +39,11 @@ Chạy 30 kiểm thử đơn vị của bộ tính toán (đáp số tính tay �
 
 ## Đưa lên GitHub Pages
 
-1. Gộp nhánh này vào `main`.
-2. Vào **Settings › Pages › Build and deployment**, chọn **Source: GitHub Actions** (làm một lần).
+1. Vào **Settings › Pages › Build and deployment**, chọn **Source: GitHub Actions** (làm một lần).
+2. Vào tab **Actions › Triển khai GitHub Pages › Run workflow** (hoặc push một commit lên nhánh mặc định).
 3. Quy trình `.github/workflows/pages.yml` chạy kiểm thử rồi triển khai thư mục `web/`. Trang có dạng `https://<tài-khoản>.github.io/Dashboard-blended/`.
+
+Quy trình luôn triển khai từ **nhánh mặc định** của repo, nên vẫn đúng nếu sau này đổi nhánh mặc định sang `main`. Khi Pages chưa bật, quy trình chỉ chạy kiểm thử và ghi chú nhắc bật Pages, không báo lỗi.
 
 Mọi đường dẫn đều tương đối và định tuyến bằng `#/…`, nên trang cũng chạy được trên máy chủ tĩnh của Trường mà không cần cấu hình thêm.
 
