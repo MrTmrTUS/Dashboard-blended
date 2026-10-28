@@ -1,0 +1,28 @@
+{
+  "format": "tdu-bl-accounts",
+  "version": 1,
+  "updatedAt": "2026-10-28T06:36:13.798Z",
+  "note": "Danh sách tài khoản đăng nhập. Mật khẩu lưu dạng băm PBKDF2-SHA256 có muối, không lưu mật khẩu gốc. Tạo, sửa tài khoản ở M0 › Tài khoản rồi tải tệp này lên web/data/accounts.json.",
+  "accounts": [
+    {
+      "username": "admin",
+      "name": "Quản trị hệ thống",
+      "unit": "Nhóm nghiên cứu Nội dung 3",
+      "role": "admin",
+      "salt": "7993fe2d52da68b89ab4ef7b2db5acb4",
+      "hash": "b3b83615b0dc657da8e0adc608527dcbb1d19067e077d6ec008e5844ab3cddf3",
+      "iterations": 100000,
+      "createdAt": "2026-10-28T06:36:13.643Z"
+    },
+    {
+      "username": "guess",
+      "name": "Tài khoản khách",
+      "unit": "Xem chỉ số, không chỉnh sửa",
+      "role": "viewer",
+      "salt": "ed02ac12582270888da5c1d7e2f7800c",
+      "hash": "796dc740e265f73c11e3102ab77e40e5f5835179266b9db5311abfce95c7fc75",
+      "iterations": 100000,
+      "createdAt": "2026-10-28T06:36:13.727Z"
+    }
+  ]
+}

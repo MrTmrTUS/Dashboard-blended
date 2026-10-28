@@ -35,7 +35,7 @@ Mở <http://localhost:8080> rồi đăng nhập (xem [Đăng nhập và tài kh
 npm test
 ```
 
-Chạy 37 kiểm thử đơn vị: bộ tính toán (đáp số tính tay ở mục 4), nhập tệp, bộ kiểm số, xóa thông tin nhận diện, “kịch bản” của dữ liệu mô phỏng, và phần đăng nhập (băm mật khẩu đối chiếu `node:crypto`, quy tắc tài khoản, vai trò khách).
+Chạy 40 kiểm thử đơn vị: bộ tính toán (đáp số tính tay ở mục 4), nhập tệp, bộ kiểm số, xóa thông tin nhận diện, “kịch bản” của dữ liệu mô phỏng, và phần đăng nhập (băm mật khẩu đối chiếu `node:crypto`, quy tắc tài khoản, gộp 3 chiều khi đăng lên GitHub, vai trò khách).
 
 ## Đưa lên GitHub Pages
 
@@ -60,14 +60,17 @@ Logo chính thức của Trường Đại học Thành Đông nằm ở `web/ass
 
 ## Đăng nhập và tài khoản
 
-Mở trang là gặp màn hình đăng nhập. Có sẵn 2 tài khoản (mật khẩu do nhóm nghiên cứu giữ, không ghi ở đây):
+Mở trang là gặp màn hình đăng nhập. Gửi đường dẫn <https://mrtmrtus.github.io/Dashboard-blended/> cho ai thì người đó đăng nhập được **trên máy của họ** bằng mọi tài khoản có trong tệp [`web/data/accounts.json`](web/data/accounts.json) đã đăng. Có sẵn 2 tài khoản (mật khẩu do nhóm nghiên cứu giữ, không ghi ở đây):
 
 | Tên đăng nhập | Vai trò | Được làm gì |
 |---|---|---|
 | `admin` | Quản trị hệ thống | Cấp tài khoản (M0 › Tài khoản, nhật ký), quản trị dữ liệu, cấu hình, kiểm chứng; xem thử dưới vai trò khác để trình diễn phân quyền |
 | `guess` | Khách (chỉ xem) | Xem chỉ số ở M1 Tổng quan, M2 Lớp học phần, M4 Đối sánh; không chỉnh sửa, không xem dữ liệu sinh viên, không vào M0 |
 
-- **Cấp tài khoản:** admin vào M0 › Tài khoản, nhật ký › *Tạo tài khoản* (chọn vai trò và phạm vi: khoa, giảng viên, cố vấn học tập…), đặt lại mật khẩu, khóa hoặc xóa. Thay đổi có hiệu lực ngay trên máy đó; để áp dụng cho mọi máy, bấm *Tải tệp accounts.json* rồi tải tệp lên GitHub, ghi đè [`web/data/accounts.json`](web/data/accounts.json).
+- **Cấp tài khoản:** admin vào M0 › Tài khoản, nhật ký › *Tạo tài khoản* (chọn vai trò và phạm vi: khoa, giảng viên, cố vấn học tập…), đặt lại mật khẩu, khóa hoặc xóa. Thay đổi có hiệu lực ngay trên máy của admin, và **áp dụng cho mọi máy** theo một trong hai cách ở thẻ *Đăng nhập trên mọi máy*:
+  1. **Tự đăng lên GitHub (khuyên dùng):** kết nối một lần bằng token GitHub *fine-grained* chỉ có quyền *Contents: Read and write* trên repo này (thẻ có hướng dẫn tạo token từng bước). Từ đó mỗi thay đổi tài khoản được trang tự ghi vào `web/data/accounts.json`; GitHub Pages đăng lại trang và khoảng 1 – 2 phút sau mọi máy đăng nhập được. Nếu hai quản trị cùng sửa, danh sách được gộp theo từng tài khoản, không ai ghi đè mất tài khoản của người kia. Token chỉ lưu trong trình duyệt của máy admin – chỉ kết nối trên máy riêng.
+  2. **Thủ công:** bấm *Tải tệp accounts.json* rồi tải tệp lên GitHub, ghi đè `web/data/accounts.json`.
+- Mỗi lần đăng là một commit vào nhánh mặc định (tên tài khoản GitHub của admin), nên người sửa mã nguồn nhớ `git pull` trước khi push.
 - Mật khẩu chỉ lưu dạng băm PBKDF2-SHA256 có muối. Nhập sai 5 lần thì tạm khóa 30 giây. Phiên đăng nhập kết thúc khi đóng thẻ (tối đa 12 giờ), hoặc sau 7 ngày nếu chọn “Ghi nhớ đăng nhập”; đặt lại mật khẩu, khóa hay xóa tài khoản làm phiên cũ hết hiệu lực. Đăng nhập, đăng xuất, thay đổi tài khoản đều được ghi nhật ký.
 - **Quên mật khẩu admin:** chạy `npm run account -- set-password admin` (nhập mật khẩu mới), rồi commit và push tệp `web/data/accounts.json`.
 - **Giới hạn:** đây là trang tĩnh nên bước đăng nhập kiểm tra ngay trên trình duyệt – đủ để phân quyền khi thử nghiệm, nhưng người rành kỹ thuật vẫn đọc được mã nguồn và các tệp công khai. Không đưa dữ liệu thật lên GitHub Pages; bản chính thức đặt đăng nhập trên máy chủ của Trường (Django, LDAP/OIDC).
@@ -139,6 +142,7 @@ web/                     # toàn bộ trang tĩnh – thư mục được triể
 ├─ js/views/             # M0 – M5, đăng nhập, phiếu SUS, giới thiệu
 ├─ js/api.js             # tầng truy vấn theo vai trò (tương ứng đường dẫn mục 5.8)
 ├─ js/auth.js            # đăng nhập, phiên, cấp tài khoản
+├─ js/github.js          # quản trị đăng accounts.json lên repo qua GitHub API (token fine-grained)
 ├─ js/access.js          # vai trò, phạm vi, người dùng mô phỏng để “xem thử”
 ├─ js/store.js           # lưu trữ cục bộ (localStorage, IndexedDB)
 ├─ templates/            # tệp CSV mẫu (Phụ lục A)

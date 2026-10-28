@@ -63,8 +63,23 @@ export function publicAccount(a) {
 
 const FIELDS = ['username', 'name', 'unit', 'role', 'facultyId', 'lecturerId', 'advisorId', 'disabled', 'salt', 'hash', 'iterations', 'createdAt', 'createdBy', 'updatedAt'];
 
+// Dạng chuẩn của một tài khoản: đúng thứ tự trường, bỏ trường rỗng – để ghi tệp và so sánh.
+export const canonicalAccount = (a) => Object.fromEntries(FIELDS.filter((k) => a[k] !== undefined && a[k] !== null && a[k] !== '' && a[k] !== false).map((k) => [k, a[k]]));
+
+// Gộp 3 chiều theo tên đăng nhập: tài khoản máy này đã sửa (so với bản gốc lúc bắt đầu sửa) lấy bản máy này,
+// còn lại lấy bản đang có trên GitHub – không ghi đè thay đổi của quản trị khác đăng lên trong lúc đó.
+export function mergeAccounts(base, local, remote) {
+  const byName = (list) => new Map(list.map((a) => [a.username, a]));
+  const B = byName(base);
+  const L = byName(local);
+  const R = byName(remote);
+  const same = (x, y) => JSON.stringify(x && canonicalAccount(x)) === JSON.stringify(y && canonicalAccount(y));
+  const names = [...new Set([...R.keys(), ...L.keys()])];
+  return names.map((u) => (same(B.get(u), L.get(u)) ? R.get(u) : L.get(u))).filter(Boolean);
+}
+
 export function serializeAccounts(accounts, { now = new Date() } = {}) {
-  const clean = accounts.map((a) => Object.fromEntries(FIELDS.filter((k) => a[k] !== undefined && a[k] !== null && a[k] !== '' && a[k] !== false).map((k) => [k, a[k]])));
+  const clean = accounts.map(canonicalAccount);
   return `${JSON.stringify(
     {
       format: 'tdu-bl-accounts',

@@ -30,10 +30,10 @@ Bản MVP là **nguyên mẫu chạy được, hoàn toàn trên trình duyệt*
 | 5.6 | Riêng tư | Mã nghiên cứu, từ chối mã giống mã sinh viên thật, ẩn n < 10, xóa thông tin nhận diện, nhật ký xem dữ liệu sinh viên, thư viện đóng gói kèm, phông hệ thống |
 | 5.8 | Đường dẫn chính | `#/tong-quan?ky=&dot=&khoa=`, `#/lop/<id>`, `#/lop/<id>/ke-hoach`, `#/sinh-vien?lop=`, `#/doi-sanh`, `#/quan-tri/<mục>` |
 | 6.1 | Luồng dữ liệu mỗi đợt | Nhập → kiểm tra → tính theo lô → cảnh báo → AI → *chờ công bố* → Phòng QLCL công bố → thông báo |
-| 8 | TC1 – TC4, kỹ thuật, tiếp cận | Trang kiểm chứng có bảng điểm TC1 – TC4; 37 kiểm thử đơn vị; axe-core không còn vi phạm WCAG 2.1 A/AA |
+| 8 | TC1 – TC4, kỹ thuật, tiếp cận | Trang kiểm chứng có bảng điểm TC1 – TC4; 40 kiểm thử đơn vị; axe-core không còn vi phạm WCAG 2.1 A/AA |
 | 9 | Màu, chữ, số, quy ước biểu đồ, màn hình nhỏ | `assets/css/tokens.css`; số `vi-VN`; dưới 768 px phễu và bản đồ nhiệt thành danh sách |
 
-**Đã có trong MVP:** đăng nhập bằng tài khoản do quản trị cấp (tệp `web/data/accounts.json`, mật khẩu băm PBKDF2-SHA256), vai trò khách chỉ xem, quản trị “xem thử dưới vai trò” – kiểm tra trên trình duyệt nên chỉ dùng khi thử nghiệm với dữ liệu mô phỏng.
+**Đã có trong MVP:** đăng nhập bằng tài khoản do quản trị cấp (tệp `web/data/accounts.json`, mật khẩu băm PBKDF2-SHA256; quản trị kết nối token GitHub thì trang tự đăng tệp lên repo để mọi máy đăng nhập được), vai trò khách chỉ xem, quản trị “xem thử dưới vai trò” – kiểm tra trên trình duyệt nên chỉ dùng khi thử nghiệm với dữ liệu mô phỏng.
 
 **Chưa có trong MVP (thuộc bản chính thức):** đăng nhập trên máy chủ (LDAP/OIDC hoặc tài khoản nội bộ Django), cơ sở dữ liệu dùng chung, tính theo lô trên máy chủ, sao lưu, nhập LMS, email, ứng dụng di động riêng.
 
@@ -100,7 +100,7 @@ Kết quả hiệu chỉnh: AUC kiểm định chéo ≈ 0,82 (TC1 đạt); báo
 
 ## 6. Kiểm thử đã chạy
 
-- `npm test`: 37 kiểm thử (băm mật khẩu PBKDF2 đối chiếu node:crypto, tệp và quy tắc tài khoản, vai trò khách chỉ xem; điểm phiếu và 3 điều kiện hợp lệ, ngưỡng 2/3, chỉ số và nhóm, μ/σ/z có đáp số tính tay, giới hạn phễu, Pareto, 4 vùng ma trận, quy tắc cảnh báo lớp và sinh viên, giảm liên tiếp, logistic và kiểm định chéo, Monte Carlo, CSV, kiểm tra tệp nhập, bộ kiểm số, xóa thông tin nhận diện, phân loại ý kiến, tái lập dữ liệu mô phỏng).
+- `npm test`: 40 kiểm thử (băm mật khẩu PBKDF2 đối chiếu node:crypto, tệp và quy tắc tài khoản, gộp 3 chiều khi đăng lên GitHub, vai trò khách chỉ xem; điểm phiếu và 3 điều kiện hợp lệ, ngưỡng 2/3, chỉ số và nhóm, μ/σ/z có đáp số tính tay, giới hạn phễu, Pareto, 4 vùng ma trận, quy tắc cảnh báo lớp và sinh viên, giảm liên tiếp, logistic và kiểm định chéo, Monte Carlo, CSV, kiểm tra tệp nhập, bộ kiểm số, xóa thông tin nhận diện, phân loại ý kiến, tái lập dữ liệu mô phỏng).
 - Kịch bản trình duyệt (Playwright): đổi vai trò, chặn truy cập ngoài phạm vi, lập kế hoạch từ gợi ý AI, phản hồi 👍, nhật ký khi xem M3, nhập tệp lỗi mẫu, nhập bộ dữ liệu mới → công bố đợt, khôi phục dữ liệu mô phỏng, đổi cấu hình có lịch sử, thư viện biện pháp (thêm → duyệt), chấm TC4, Monte Carlo, phiếu SUS, “Xem dạng bảng”.
 - axe-core (WCAG 2.1 A/AA) trên 13 màn hình ở cả 1440 px và 390 px: không còn vi phạm.
 - Thời gian đến khi biểu đồ M1 hiển thị: khoảng 0,9 giây trên máy tính thông thường (đã gồm sinh dữ liệu mô phỏng và tính toàn bộ chỉ số trên trình duyệt).

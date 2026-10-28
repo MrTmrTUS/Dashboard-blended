@@ -1,7 +1,8 @@
 // M0 › Tài khoản, nhật ký: quản trị cấp tài khoản đăng nhập (tạo, sửa, đặt lại mật khẩu, khóa, xóa),
-// tải tệp accounts.json để áp dụng cho mọi máy; vai trò và phạm vi; nhật ký đăng nhập và truy cập.
+// đăng danh sách lên GitHub để mọi máy đăng nhập được (tự động khi đã kết nối, hoặc tải tệp thủ công);
+// vai trò và phạm vi; nhật ký đăng nhập và truy cập.
 import { ROLES, SCREENS } from '../access.js';
-import { accounts, accountsStatus, createAccount, deleteAccount, discardLocalAccounts, exportAccounts, setDisabled, setPassword, updateAccount } from '../auth.js';
+import { accounts, accountsStatus, createAccount, deleteAccount, discardLocalAccounts, exportAccounts, publishAccounts, setDisabled, setPassword, updateAccount } from '../auth.js';
 import { findAccount, guardRemoval, minPasswordLength, validateAccount, validatePassword } from '../core/accounts.js';
 import { toCsv } from '../core/csv.js';
 import { fmtDateTime, fmtInt } from '../core/format.js';
@@ -9,8 +10,10 @@ import { accessLog, state } from '../store.js';
 import { banner, dataTable, openDialog, plainCard, statusChip, toast } from '../ui/components.js';
 import { downloadText, html, on, raw } from '../ui/dom.js';
 import { icon } from '../ui/icons.js';
+import { connect, connection, detectRepo, disconnect } from '../github.js';
 
 const ROLE_ORDER = ['viewer', 'bgh', 'qlcl', 'khoa', 'gv', 'cvht', 'admin'];
+const sync = { busy: false, error: '' };
 
 // Chỉ chính tài khoản quản trị (không phải lúc đang "xem thử" vai trò khác) được cấp tài khoản.
 const canManage = (ctx) => ctx.user.role === 'admin' && Boolean(ctx.user.account);
@@ -25,6 +28,110 @@ function scopeText(a) {
 }
 
 const roleHint = (r) => `${ROLES[r].screens.map((s) => `${s} ${SCREENS[s].label}`).join(', ')} · ${ROLES[r].scope}`;
+
+// ---- Đăng danh sách tài khoản lên GitHub để mọi máy đăng nhập được ----------------------------------
+
+const TOKEN_URL = 'https://github.com/settings/personal-access-tokens/new';
+
+function syncBanner(status) {
+  if (sync.busy) return banner({ kind: 'info', iconText: '⏳', title: 'Đang đăng danh sách tài khoản lên GitHub…' });
+  const discard = html`<button type="button" class="btn btn--sm" data-acc-discard>Bỏ thay đổi trên máy này</button>`;
+  if (status.dirty && status.connection) {
+    return banner({
+      kind: 'warn',
+      iconText: '⚠',
+      title: 'Có thay đổi tài khoản chưa đăng lên GitHub – máy khác chưa dùng được',
+      body: sync.error ? `Lần đăng trước chưa được: ${sync.error}` : 'Bấm “Đăng lên GitHub ngay”.',
+      actions: html`<span class="row-actions"><button type="button" class="btn btn--sm btn--primary" data-gh-publish>${icon('upload')}Đăng lên GitHub ngay</button>${discard}</span>`,
+    });
+  }
+  if (status.dirty) {
+    return banner({
+      kind: 'warn',
+      iconText: '⚠',
+      title: 'Tài khoản mới hoặc vừa sửa mới dùng được trên máy này',
+      body: 'Kết nối GitHub ở thẻ “Đăng nhập trên mọi máy” bên dưới để trang tự đăng lên, hoặc tải tệp accounts.json lên GitHub thủ công.',
+      actions: html`<span class="row-actions"><button type="button" class="btn btn--sm btn--primary" data-acc-export>${icon('download')}Tải tệp accounts.json</button>${discard}</span>`,
+    });
+  }
+  if (status.local && status.published) {
+    const late = Date.now() - Date.parse(status.published.at) > 10 * 60 * 1000;
+    return banner({
+      kind: 'info',
+      iconText: '✔',
+      title: `Đã đăng lên GitHub lúc ${fmtDateTime(status.published.at)} – trang đang được đăng lại`,
+      body: late
+        ? 'Đã hơn 10 phút: xem tab Actions trên GitHub (quy trình “Triển khai GitHub Pages”) xem có lỗi không.'
+        : 'Khoảng 1 – 2 phút sau, mọi máy đăng nhập được bằng danh sách mới. Máy này đã dùng được ngay.',
+      actions: status.published.commitUrl ? html`<a class="btn btn--sm" href="${status.published.commitUrl}" target="_blank" rel="noopener">${icon('link')}Xem trên GitHub</a>` : '',
+    });
+  }
+  return '';
+}
+
+function syncCard(status) {
+  const conn = status.connection;
+  const connected = html`<p class="check-line check-line--ok" style="margin:0 0 8px"><span aria-hidden="true">✔</span><span>Đã kết nối repo <b>${conn?.repo}</b> (nhánh <code>${conn?.branch}</code>) lúc ${fmtDateTime(conn?.connectedAt)}.
+      Mỗi lần tạo, sửa, đặt lại mật khẩu, khóa hay xóa tài khoản, trang <b>tự đăng</b> tệp <code>web/data/accounts.json</code> lên GitHub; khoảng 1 – 2 phút sau mọi máy đăng nhập được.</span></p>
+    <p class="caption" style="margin:0 0 10px">Token chỉ lưu trên trình duyệt của máy này. Token hết hạn hoặc bị thu hồi thì bấm Ngắt kết nối rồi kết nối lại bằng token mới.</p>
+    <button type="button" class="btn btn--sm" data-gh-disconnect>Ngắt kết nối (xóa token khỏi máy này)</button>`;
+  const form = html`<form id="gh-form" class="form-grid" novalidate>
+      <div class="form-field"><label for="gh-repo">Repo trên GitHub</label>
+        <input class="input" id="gh-repo" name="repo" value="${detectRepo()}" placeholder="chủ/tên-repo, ví dụ MrTmrTUS/Dashboard-blended" autocapitalize="none" spellcheck="false" required></div>
+      <div class="form-field"><label for="gh-token">Token GitHub (fine-grained)</label>
+        <input class="input" type="password" id="gh-token" name="token" placeholder="github_pat_…" autocomplete="off" spellcheck="false" required></div>
+      <p class="caption form-field--full" id="gh-error" role="alert" style="color:var(--alert-ink);margin:0"></p>
+      <div class="form-field--full"><button type="submit" class="btn btn--sm btn--primary">${icon('link')}Kết nối GitHub</button></div>
+    </form>
+    <details class="gh-help">
+      <summary>Cách tạo token (làm một lần, khoảng 2 phút)</summary>
+      <ol class="small steps-plain">
+        <li>Mở <a href="${TOKEN_URL}" target="_blank" rel="noopener">trang tạo token của GitHub</a> (hoặc: ảnh đại diện › Settings › Developer settings › Personal access tokens › Fine-grained tokens › Generate new token).</li>
+        <li><b>Token name</b>: ví dụ “Dashboard BL – tài khoản”; <b>Expiration</b>: chọn thời hạn, ví dụ 90 ngày.</li>
+        <li><b>Repository access</b>: <i>Only select repositories</i> › chọn đúng repo của dashboard.</li>
+        <li><b>Permissions › Repository permissions › Contents</b>: <i>Read and write</i> (Metadata: Read-only tự có). Không cần quyền nào khác.</li>
+        <li>Bấm <b>Generate token</b>, sao chép chuỗi bắt đầu bằng <code>github_pat_</code> rồi dán vào ô Token ở trên.</li>
+      </ol>
+      <p class="caption">Chỉ kết nối trên máy riêng của quản trị: token lưu trong trình duyệt và cho phép ghi vào repo này.</p>
+    </details>`;
+  return plainCard({
+    title: 'Đăng nhập trên mọi máy',
+    sub: 'Gửi đường dẫn trang cho người dùng: họ đăng nhập được trên máy của mình bằng mọi tài khoản đã có trong tệp web/data/accounts.json đã đăng',
+    body: html`<div class="sync-card">
+        <section><h3 class="sync-card__title">Tự đăng lên GitHub (khuyên dùng)</h3>${conn ? connected : form}</section>
+        <section><h3 class="sync-card__title">Hoặc tải tệp lên thủ công</h3>
+          <ol class="small steps-plain">
+            <li>Bấm <button type="button" class="btn btn--sm" data-acc-export>${icon('download')}Tải tệp accounts.json</button></li>
+            <li>Trên GitHub, mở thư mục <code>web/data</code> của repo › <b>Add file › Upload files</b>, chọn tệp vừa tải (ghi đè <code>accounts.json</code>) › <b>Commit changes</b>.</li>
+            <li>Sau 1 – 2 phút trang được đăng lại; mọi máy dùng danh sách mới.</li>
+          </ol>
+          <p class="caption">Đặt lại mật khẩu, khóa hay xóa tài khoản làm phiên đăng nhập cũ của tài khoản đó hết hiệu lực khi danh sách mới được đăng. Quên mật khẩu quản trị: chạy <code>npm run account -- set-password admin</code> trên máy có mã nguồn rồi commit tệp <code>web/data/accounts.json</code>.</p>
+        </section>
+      </div>`,
+  });
+}
+
+// Sau mỗi thay đổi tài khoản: vẽ lại ngay, rồi tự đăng lên GitHub nếu đã kết nối.
+async function afterChange(ctx, message) {
+  toast(message);
+  ctx.accountsChanged();
+  if (connection()) await syncNow(ctx);
+}
+
+async function syncNow(ctx) {
+  sync.busy = true;
+  sync.error = '';
+  ctx.route();
+  try {
+    await publishAccounts();
+    toast('Đã đăng lên GitHub – khoảng 1 – 2 phút sau các máy khác đăng nhập được', 5000);
+  } catch (e) {
+    sync.error = e.message;
+    toast(`Chưa đăng được lên GitHub: ${e.message}`, 6000);
+  }
+  sync.busy = false;
+  ctx.accountsChanged();
+}
 
 export function renderUsersTab(ctx) {
   const log = accessLog.list();
@@ -47,15 +154,7 @@ export function renderUsersTab(ctx) {
     ${status.error ? banner({ kind: 'alert', iconText: '✖', title: status.error, body: 'Chỉ đăng nhập được bằng danh sách đã lưu trên máy này (nếu có). Kiểm tra tệp web/data/accounts.json trên GitHub.' }) : ''}
     ${manage
       ? html`
-        ${status.local
-          ? banner({
-              kind: 'warn',
-              iconText: '⚠',
-              title: 'Máy này đang dùng danh sách tài khoản đã sửa, chưa áp dụng cho các máy khác',
-              body: 'Tải tệp accounts.json rồi tải lên GitHub (hướng dẫn bên dưới). Khi trang đã đăng tệp mới, có thể bấm “Bỏ thay đổi trên máy này”.',
-              actions: html`<span class="row-actions"><button type="button" class="btn btn--sm btn--primary" data-acc-export>${icon('download')}Tải tệp accounts.json</button><button type="button" class="btn btn--sm" data-acc-discard>Bỏ thay đổi trên máy này</button></span>`,
-            })
-          : ''}
+        ${syncBanner(status)}
         ${plainCard({
           title: `Tài khoản đăng nhập (${list.length})`,
           sub: 'Mật khẩu lưu dạng băm PBKDF2-SHA256 có muối – kể cả quản trị cũng không xem được mật khẩu, chỉ đặt lại được',
@@ -72,16 +171,7 @@ export function renderUsersTab(ctx) {
             rows: list,
           })}</div>`,
         })}
-        <div class="mt-16">${plainCard({
-          title: 'Áp dụng danh sách tài khoản cho mọi máy',
-          body: html`<ol class="small steps-plain">
-              <li>Tạo hoặc sửa tài khoản ở bảng trên – có hiệu lực ngay trên máy này.</li>
-              <li>Bấm <b>Tải tệp accounts.json</b>.</li>
-              <li>Trên GitHub, mở thư mục <code>web/data</code> của repo › <b>Add file › Upload files</b>, chọn tệp vừa tải (ghi đè <code>accounts.json</code>) › <b>Commit changes</b>.</li>
-              <li>Sau 1 – 2 phút trang được đăng lại; mọi máy dùng danh sách mới. Phiên đăng nhập của tài khoản bị khóa, xóa hoặc đặt lại mật khẩu sẽ hết hiệu lực.</li>
-            </ol>
-            <p class="caption">Quên mật khẩu quản trị: chạy <code>npm run account -- set-password admin</code> trên máy có mã nguồn rồi commit tệp <code>web/data/accounts.json</code>.</p>`,
-        })}</div>`
+        <div class="mt-16">${syncCard(status)}</div>`
       : plainCard({ title: 'Tài khoản đăng nhập', body: html`<p class="small" style="margin:0">Chỉ tài khoản quản trị được cấp và quản lý tài khoản đăng nhập.</p>` })}
     ${banner({ kind: 'info', title: 'Đăng nhập trong bản MVP và bản chính thức', body: 'Bản MVP là trang tĩnh: bước đăng nhập kiểm tra trên trình duyệt, đủ để phân quyền khi thử nghiệm nhưng không thay được máy chủ xác thực – không đưa dữ liệu thật lên trang công khai. Bản chính thức dùng tài khoản Trường (LDAP/OIDC) nếu đơn vị CNTT hỗ trợ, nếu không thì tài khoản nội bộ trên máy chủ Django (mục 10).' })}
     <div class="mt-16">${plainCard({
@@ -131,13 +221,37 @@ export function mountUsersTab(root, ctx) {
   });
   on(root, 'click', '[data-acc-export]', () => {
     downloadText('accounts.json', exportAccounts(), 'application/json;charset=utf-8');
-    toast('Đã tải accounts.json – tải tệp lên web/data trên GitHub để áp dụng cho mọi máy');
+    toast('Đã tải accounts.json – tải tệp lên thư mục web/data trên GitHub để áp dụng cho mọi máy');
   });
   on(root, 'click', '[data-acc-discard]', () => {
     if (!confirm('Bỏ mọi thay đổi tài khoản trên máy này và dùng lại danh sách trong tệp data/accounts.json đã đăng?')) return;
     discardLocalAccounts();
+    sync.error = '';
     toast('Đã dùng lại danh sách tài khoản đã đăng');
     ctx.accountsChanged();
+  });
+  on(root, 'click', '[data-gh-publish]', () => syncNow(ctx));
+  on(root, 'click', '[data-gh-disconnect]', () => {
+    if (!confirm('Ngắt kết nối GitHub và xóa token khỏi trình duyệt này? Thay đổi tài khoản sau đó cần tải tệp lên thủ công.')) return;
+    disconnect();
+    toast('Đã ngắt kết nối GitHub trên máy này');
+    ctx.route();
+  });
+  on(root, 'submit', '#gh-form', async (e, form) => {
+    e.preventDefault();
+    const btn = form.querySelector('[type="submit"]');
+    const err = form.querySelector('#gh-error');
+    btn.disabled = true;
+    err.textContent = '';
+    try {
+      const conn = await connect(form.elements.repo.value, form.elements.token.value);
+      toast(`Đã kết nối GitHub: ${conn.repo} (nhánh ${conn.branch})`);
+      if (accountsStatus().dirty) await syncNow(ctx);
+      else ctx.route();
+    } catch (ex) {
+      err.textContent = ex.message;
+      btn.disabled = false;
+    }
   });
   on(root, 'click', '[data-acc-new]', () => openAccountDialog(ctx));
   on(root, 'click', '[data-acc-edit]', (e, btn) => openAccountDialog(ctx, findAccount(accounts(), btn.dataset.accEdit)));
@@ -151,8 +265,7 @@ export function mountUsersTab(root, ctx) {
       if (!confirm(`Khóa tài khoản ${acc.username}? Người dùng sẽ không đăng nhập được cho tới khi mở khóa.`)) return;
     }
     setDisabled(acc.username, !acc.disabled);
-    toast(`${acc.disabled ? 'Đã mở khóa' : 'Đã khóa'} tài khoản ${acc.username}`);
-    ctx.accountsChanged();
+    afterChange(ctx, `${acc.disabled ? 'Đã mở khóa' : 'Đã khóa'} tài khoản ${acc.username}`);
   });
   on(root, 'click', '[data-acc-del]', (e, btn) => {
     const acc = findAccount(accounts(), btn.dataset.accDel);
@@ -160,8 +273,7 @@ export function mountUsersTab(root, ctx) {
     if (why) return toast(why);
     if (!confirm(`Xóa hẳn tài khoản ${acc.username} (${acc.name})?`)) return;
     deleteAccount(acc.username);
-    toast(`Đã xóa tài khoản ${acc.username}`);
-    ctx.accountsChanged();
+    afterChange(ctx, `Đã xóa tài khoản ${acc.username}`);
   });
 }
 
@@ -229,8 +341,7 @@ function openAccountDialog(ctx, acc = null) {
         if (acc) updateAccount(acc.username, input);
         else await createAccount(input, ctx.account);
         dlg.close();
-        toast(acc ? `Đã lưu tài khoản ${acc.username}` : `Đã tạo tài khoản ${input.username.trim().toLowerCase()} – tải tệp accounts.json để áp dụng cho mọi máy`);
-        ctx.accountsChanged();
+        afterChange(ctx, acc ? `Đã lưu tài khoản ${acc.username}` : `Đã tạo tài khoản ${input.username.trim().toLowerCase()}`);
       });
       (acc ? form.elements.name : form.elements.username).focus();
     },
@@ -261,8 +372,7 @@ function openPasswordDialog(ctx, acc) {
         dlg.querySelector('[type="submit"]').disabled = true;
         await setPassword(acc.username, form.elements.password.value);
         dlg.close();
-        toast(`Đã đặt lại mật khẩu cho ${acc.username}`);
-        ctx.accountsChanged();
+        afterChange(ctx, `Đã đặt lại mật khẩu cho ${acc.username}`);
       });
       form.elements.password.focus();
     },

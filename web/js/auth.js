@@ -1,11 +1,13 @@
 // Đăng nhập cho bản MVP chạy tĩnh (GitHub Pages hoặc máy chủ tĩnh của Trường).
 // Tài khoản lấy từ data/accounts.json (mật khẩu đã băm). Quản trị tạo, sửa tài khoản ở M0 › Tài khoản:
-// thay đổi có hiệu lực ngay trên máy đó, và áp dụng cho mọi máy khi tải tệp mới lên web/data/accounts.json.
+// thay đổi có hiệu lực ngay trên máy đó; khi đã kết nối GitHub (github.js), trang tự đăng tệp mới lên repo
+// để mọi máy đăng nhập được sau khoảng 1 – 2 phút (hoặc quản trị tải tệp lên thủ công).
 // LƯU Ý: kiểm tra đăng nhập chạy trên trình duyệt nên chỉ chặn truy cập thông thường; không thay được
 // xác thực phía máy chủ của bản chính thức (Django) – không đưa dữ liệu thật lên trang tĩnh công khai.
 import { ROLES } from './access.js';
-import { findAccount, normalizeUsername, parseAccounts, publicAccount, SCOPE_FIELD, serializeAccounts } from './core/accounts.js';
+import { findAccount, mergeAccounts, normalizeUsername, parseAccounts, publicAccount, SCOPE_FIELD, serializeAccounts } from './core/accounts.js';
 import { hashPassword, verifyPassword } from './core/password.js';
+import { connection, GitHubError, readAccountsFile, writeAccountsFile } from './github.js';
 import { accessLog, load, remove, save } from './store.js';
 
 const SESSION = 'tdu-bl:auth:session';
@@ -18,18 +20,31 @@ const MAX_FAILS = 5;
 const LOCK_MS = 30 * 1000;
 
 let deployed = [];
+let deployedAt = '';
 let deployedError = null;
+
+// Trên máy quản trị, ngoài tệp đã đăng còn có thể có (localStorage):
+//   auth:accounts  – danh sách đã sửa trên máy này (dùng thay tệp đã đăng)
+//   auth:base      – bản gốc lúc bắt đầu sửa (để gộp 3 chiều khi đăng lên GitHub)
+//   auth:dirty     – còn thay đổi chưa đăng
+//   auth:published – lần đăng gần nhất { at, fileUpdatedAt, commitUrl }
+const LOCAL_KEYS = ['auth:accounts', 'auth:base', 'auth:dirty', 'auth:published'];
 
 export async function initAuth(url = 'data/accounts.json') {
   try {
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    deployed = parseAccounts(await res.text());
+    const text = await res.text();
+    deployed = parseAccounts(text);
+    deployedAt = JSON.parse(text).updatedAt ?? '';
     deployedError = null;
   } catch (e) {
     deployed = [];
     deployedError = `Không tải được danh sách tài khoản (data/accounts.json): ${e.message}`;
   }
+  // Trang đã đăng xong bản mà máy này đưa lên GitHub và không còn sửa gì thêm → dùng lại tệp đã đăng.
+  const pub = load('auth:published', null);
+  if (pub && !load('auth:dirty', false) && deployedAt && deployedAt >= pub.fileUpdatedAt) LOCAL_KEYS.forEach(remove);
 }
 
 // ---- Danh sách tài khoản: tệp đã đăng, hoặc bản đã sửa trên máy này -----------------------------
@@ -39,16 +54,56 @@ export function accounts() {
   return Array.isArray(local) && local.length ? local : deployed;
 }
 
-export const accountsStatus = () => ({ local: Array.isArray(load('auth:accounts', null)), error: deployedError, deployedCount: deployed.length });
+export const accountsStatus = () => ({
+  local: Array.isArray(load('auth:accounts', null)),
+  dirty: load('auth:dirty', false),
+  published: load('auth:published', null),
+  connection: connection(),
+  error: deployedError,
+  deployedCount: deployed.length,
+});
 
 function commit(list) {
+  if (!load('auth:base', null)) save('auth:base', deployed);
   save('auth:accounts', list);
+  save('auth:dirty', true);
   restamp();
 }
 
 export function discardLocalAccounts() {
-  remove('auth:accounts');
+  LOCAL_KEYS.forEach(remove);
   restamp();
+}
+
+// Đăng danh sách lên GitHub: đọc tệp hiện có, gộp 3 chiều, ghi; tệp vừa bị đổi (409) thì đọc lại và thử tiếp.
+// Các lần đăng chạy nối tiếp nhau để không giẫm lên nhau.
+let queue = Promise.resolve();
+export function publishAccounts() {
+  const run = queue.then(async () => {
+    const conn = connection();
+    if (!conn) throw new GitHubError(0, 'Chưa kết nối GitHub');
+    if (!load('auth:dirty', false)) return load('auth:published', null);
+    for (let attempt = 0; ; attempt++) {
+      const remote = await readAccountsFile(conn);
+      const merged = mergeAccounts(load('auth:base', deployed), accounts(), parseAccounts(remote.text));
+      const text = serializeAccounts(merged);
+      try {
+        const res = await writeAccountsFile(conn, { text, sha: remote.sha, message: `Cập nhật tài khoản đăng nhập (M0 › Tài khoản, ${merged.length} tài khoản)` });
+        const pub = { at: new Date().toISOString(), fileUpdatedAt: JSON.parse(text).updatedAt, commitUrl: res.commitUrl };
+        save('auth:accounts', merged);
+        save('auth:base', merged);
+        save('auth:dirty', false);
+        save('auth:published', pub);
+        restamp();
+        accessLog.add({ userId: 'github', userName: 'GitHub (tự đăng)', role: '', action: 'Đăng danh sách tài khoản lên GitHub', target: `${conn.repo} › ${conn.branch}`, count: merged.length });
+        return pub;
+      } catch (e) {
+        if (!(e instanceof GitHubError && e.status === 409 && attempt < 2)) throw e;
+      }
+    }
+  });
+  queue = run.catch(() => {});
+  return run;
 }
 
 export const exportAccounts = () => serializeAccounts(accounts());

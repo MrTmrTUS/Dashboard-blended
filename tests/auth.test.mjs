@@ -4,10 +4,14 @@ import assert from 'node:assert/strict';
 import { createHash, createHmac, pbkdf2Sync, randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { accountUser, canSee, classInScope, isReadOnly, studentRowInScope } from '../web/js/access.js';
-import { guardRemoval, parseAccounts, publicAccount, serializeAccounts, validateAccount } from '../web/js/core/accounts.js';
+import { guardRemoval, mergeAccounts, parseAccounts, publicAccount, serializeAccounts, validateAccount } from '../web/js/core/accounts.js';
 import { deriveKey, hashPassword, hmacSha256, pbkdf2Sha256, sha256, toHex, verifyPassword } from '../web/js/core/password.js';
+import { detectRepo, fromBase64, toBase64 } from '../web/js/github.js';
 
-const accountsFile = readFileSync(new URL('../web/data/accounts.json', import.meta.url), 'utf8');
+// Tệp đang đăng có thể được quản trị đổi bất cứ lúc nào (M0 › Tài khoản) nên chỉ kiểm tra cấu trúc;
+// mật khẩu mặc định kiểm tra trên bản sao lúc giao (tests/fixtures/accounts-default.json).
+const liveFile = readFileSync(new URL('../web/data/accounts.json', import.meta.url), 'utf8');
+const accountsFile = readFileSync(new URL('./fixtures/accounts-default.json', import.meta.url), 'utf8');
 
 test('SHA-256, HMAC bằng JavaScript khớp node:crypto (gồm các độ dài sát biên khối 64 byte)', () => {
   assert.equal(toHex(sha256(new TextEncoder().encode('abc'))), 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
@@ -49,7 +53,13 @@ test('hashPassword → verifyPassword: đúng mật khẩu mới qua, muối kh�
   assert.equal(await verifyPassword('abc123', { salt: a.salt }), false);
 });
 
-test('data/accounts.json: admin / TDU@2026 (quản trị) và guess / 123 (khách chỉ xem), không chứa mật khẩu gốc', async () => {
+test('web/data/accounts.json đang đăng: đúng định dạng, còn quản trị hoạt động, không có trường mật khẩu gốc', () => {
+  const list = parseAccounts(liveFile);
+  assert.ok(list.some((a) => a.role === 'admin' && !a.disabled));
+  for (const a of JSON.parse(liveFile).accounts) assert.deepEqual(Object.keys(a).filter((k) => /pass|mat_khau/i.test(k)), [], a.username);
+});
+
+test('tài khoản lúc giao: admin / TDU@2026 (quản trị) và guess / 123 (khách chỉ xem), không chứa mật khẩu gốc', async () => {
   assert.ok(!accountsFile.includes('TDU@2026'));
   const list = parseAccounts(accountsFile);
   const admin = list.find((a) => a.username === 'admin');
@@ -104,4 +114,30 @@ test('vai trò khách chỉ xem: M1, M2, M4 toàn Trường; không M0, M3, khô
   assert.deepEqual([gv.lecturerId, gv.facultyId, gv.unit, gv.initials], ['GV01', 'KT', 'Khoa Kinh tế', 'HB']);
   assert.equal(classInScope(gv, { lecturerId: 'GV01' }), true);
   assert.equal(classInScope(gv, { lecturerId: 'GV02' }), false);
+});
+
+test('gộp 3 chiều khi đăng lên GitHub: giữ thay đổi của máy này và của quản trị khác', () => {
+  const acc = (username, name, extra = {}) => ({ username, name, role: 'viewer', salt: '0'.repeat(32), hash: '1'.repeat(64), ...extra });
+  const base = [acc('admin', 'QT', { role: 'admin' }), acc('guess', 'Khách'), acc('cu', 'Tài khoản cũ')];
+  // Máy này: tạo "moi", sửa tên "guess", xóa "cu"
+  const local = [base[0], acc('guess', 'Khách mời'), acc('moi', 'Mới tạo')];
+  // Trên GitHub trong lúc đó: quản trị khác tạo "khac" và khóa "admin2"
+  const remote = [...base, acc('khac', 'Máy khác tạo'), acc('admin2', 'QT2', { role: 'admin', disabled: true })];
+  const merged = mergeAccounts(base, local, remote);
+  assert.deepEqual(merged.map((a) => `${a.username}:${a.name}`), ['admin:QT', 'guess:Khách mời', 'khac:Máy khác tạo', 'admin2:QT2', 'moi:Mới tạo']);
+  // Máy này không sửa gì thì lấy đúng bản trên GitHub
+  assert.deepEqual(mergeAccounts(base, base, remote), remote);
+  // Hai bên cùng sửa một tài khoản: bản của máy đang đăng thắng
+  const both = mergeAccounts(base, [acc('admin', 'QT sửa', { role: 'admin' })], [acc('admin', 'QT khác', { role: 'admin' })]);
+  assert.equal(both[0].name, 'QT sửa');
+});
+
+test('mã hóa Base64 tiếng Việt cho GitHub API và nhận repo từ địa chỉ GitHub Pages', () => {
+  const text = serializeAccounts(parseAccounts(accountsFile));
+  assert.equal(fromBase64(toBase64(text)), text);
+  assert.equal(fromBase64('VHLGsOG7nW5nIMSQ4bqhaSBo4buNYw=='), 'Trường Đại học');
+  assert.equal(toBase64('Trường Đại học'), Buffer.from('Trường Đại học').toString('base64'));
+  assert.equal(detectRepo({ hostname: 'mrtmrtus.github.io', pathname: '/Dashboard-blended/web/' }), 'mrtmrtus/Dashboard-blended');
+  assert.equal(detectRepo({ hostname: 'localhost', pathname: '/' }), '');
+  assert.equal(detectRepo({ hostname: 'mrtmrtus.github.io', pathname: '/' }), '');
 });
