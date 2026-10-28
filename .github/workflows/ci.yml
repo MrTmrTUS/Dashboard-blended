@@ -1,0 +1,23 @@
+name: Kiểm thử
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Kiểm thử đơn vị bộ tính toán (node --test)
+        run: npm test
+      - name: Kiểm tra tệp mẫu CSV khớp bộ sinh dữ liệu
+        run: |
+          npm run samples
+          git diff --exit-code -- web/templates || (echo "Tệp mẫu trong web/templates đã cũ – chạy 'npm run samples' rồi commit lại." && exit 1)

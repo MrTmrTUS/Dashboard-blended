@@ -1,0 +1,34 @@
+﻿ma_lop_hp,ten_hoc_phan,ma_khoa,ma_giang_vien,hoc_ky,si_so,ma_hoc_phan,nhom,ten_khoa,ten_giang_vien
+HK1-2627-MKT101-N01,Marketing căn bản,KT,GV01,HK1-2627,44,MKT101,N01,Khoa Kinh tế,ThS. Hoàng Hữu Bình
+HK1-2627-MKT101-N02,Marketing căn bản,KT,GV02,HK1-2627,39,MKT101,N02,Khoa Kinh tế,ThS. Phan Thanh Trang
+HK1-2627-MKT101-N03,Marketing căn bản,KT,GV01,HK1-2627,32,MKT101,N03,Khoa Kinh tế,ThS. Hoàng Hữu Bình
+HK1-2627-KTE102-N01,Kinh tế vi mô,KT,GV03,HK1-2627,26,KTE102,N01,Khoa Kinh tế,PGS.TS. Dương Thị Linh
+HK1-2627-KTE102-N02,Kinh tế vi mô,KT,GV03,HK1-2627,38,KTE102,N02,Khoa Kinh tế,PGS.TS. Dương Thị Linh
+HK1-2627-KTO201-N01,Nguyên lý kế toán,KT,GV04,HK1-2627,32,KTO201,N01,Khoa Kinh tế,ThS. Lê Thu Giang
+HK1-2627-KTO201-N02,Nguyên lý kế toán,KT,GV04,HK1-2627,39,KTO201,N02,Khoa Kinh tế,ThS. Lê Thu Giang
+HK1-2627-INF201-N01,Lập trình cơ bản,CNTT,GV05,HK1-2627,48,INF201,N01,Khoa Công nghệ thông tin,TS. Nguyễn Thị Minh
+HK1-2627-INF201-N02,Lập trình cơ bản,CNTT,GV05,HK1-2627,47,INF201,N02,Khoa Công nghệ thông tin,TS. Nguyễn Thị Minh
+HK1-2627-INF202-N01,Cơ sở dữ liệu,CNTT,GV06,HK1-2627,24,INF202,N01,Khoa Công nghệ thông tin,ThS. Trần Hải Quân
+HK1-2627-INF202-N02,Cơ sở dữ liệu,CNTT,GV06,HK1-2627,48,INF202,N02,Khoa Công nghệ thông tin,ThS. Trần Hải Quân
+HK1-2627-INF301-N01,Mạng máy tính,CNTT,GV07,HK1-2627,18,INF301,N01,Khoa Công nghệ thông tin,TS. Phạm Minh Anh
+HK1-2627-KTC101-N01,Vẽ kỹ thuật,KTCN,GV08,HK1-2627,36,KTC101,N01,Khoa Kỹ thuật – Công nghệ,TS. Bùi Hải Hạnh
+HK1-2627-KTC101-N02,Vẽ kỹ thuật,KTCN,GV08,HK1-2627,34,KTC101,N02,Khoa Kỹ thuật – Công nghệ,TS. Bùi Hải Hạnh
+HK1-2627-KTC201-N01,Điện tử cơ bản,KTCN,GV09,HK1-2627,47,KTC201,N01,Khoa Kỹ thuật – Công nghệ,PGS.TS. Phan Ngọc Huyền
+HK1-2627-KTC202-N01,Cơ học ứng dụng,KTCN,GV10,HK1-2627,46,KTC202,N01,Khoa Kỹ thuật – Công nghệ,ThS. Phan Ngọc Anh
+HK1-2627-KTC202-N02,Cơ học ứng dụng,KTCN,GV10,HK1-2627,32,KTC202,N02,Khoa Kỹ thuật – Công nghệ,ThS. Phan Ngọc Anh
+HK1-2627-ENG101-N01,Tiếng Anh 1,NN,GV11,HK1-2627,30,ENG101,N01,Khoa Ngoại ngữ,ThS. Nguyễn Thu Hương
+HK1-2627-ENG101-N02,Tiếng Anh 1,NN,GV12,HK1-2627,45,ENG101,N02,Khoa Ngoại ngữ,ThS. Lê Quang Huyền
+HK1-2627-ENG101-N03,Tiếng Anh 1,NN,GV11,HK1-2627,25,ENG101,N03,Khoa Ngoại ngữ,ThS. Nguyễn Thu Hương
+HK1-2627-ENG202-N01,Nghe – Nói 2,NN,GV13,HK1-2627,30,ENG202,N01,Khoa Ngoại ngữ,PGS.TS. Ngô Ngọc Trang
+HK1-2627-ENG202-N02,Nghe – Nói 2,NN,GV13,HK1-2627,32,ENG202,N02,Khoa Ngoại ngữ,PGS.TS. Ngô Ngọc Trang
+HK1-2627-ENG301-N01,Biên dịch 1,NN,GV14,HK1-2627,20,ENG301,N01,Khoa Ngoại ngữ,ThS. Vũ Đức Sơn
+HK1-2627-LAW101-N01,Pháp luật đại cương,LUAT,GV15,HK1-2627,28,LAW101,N01,Khoa Luật,TS. Phạm Kim Yến
+HK1-2627-LAW101-N02,Pháp luật đại cương,LUAT,GV15,HK1-2627,42,LAW101,N02,Khoa Luật,TS. Phạm Kim Yến
+HK1-2627-LAW201-N01,Luật Dân sự 1,LUAT,GV16,HK1-2627,46,LAW201,N01,Khoa Luật,TS. Nguyễn Đức Trang
+HK1-2627-LAW201-N02,Luật Dân sự 1,LUAT,GV16,HK1-2627,27,LAW201,N02,Khoa Luật,TS. Nguyễn Đức Trang
+HK1-2627-LAW202-N01,Luật Hành chính,LUAT,GV17,HK1-2627,38,LAW202,N01,Khoa Luật,TS. Lê Thu Huyền
+HK1-2627-PHA201-N01,Hóa dược 1,YD,GV18,HK1-2627,48,PHA201,N01,Khoa Y Dược,TS. Bùi Thanh Vy
+HK1-2627-PHA201-N02,Hóa dược 1,YD,GV18,HK1-2627,43,PHA201,N02,Khoa Y Dược,TS. Bùi Thanh Vy
+HK1-2627-MED101-N01,Giải phẫu,YD,GV19,HK1-2627,35,MED101,N01,Khoa Y Dược,TS. Trần Văn Huyền
+HK1-2627-MED101-N02,Giải phẫu,YD,GV19,HK1-2627,30,MED101,N02,Khoa Y Dược,TS. Trần Văn Huyền
+HK1-2627-NUR101-N01,Điều dưỡng cơ bản,YD,GV20,HK1-2627,40,NUR101,N01,Khoa Y Dược,PGS.TS. Phan Thùy Hiếu

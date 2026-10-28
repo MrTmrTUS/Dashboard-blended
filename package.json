@@ -1,0 +1,16 @@
+{
+  "name": "tdu-dashboard-bl",
+  "version": "0.1.0",
+  "description": "MVP dashboard chất lượng giảng dạy Blended Learning – Trường Đại học Thành Đông (Nội dung 3)",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "test": "node --test \"tests/*.test.mjs\"",
+    "samples": "node scripts/gen-samples.mjs"
+  }
+}

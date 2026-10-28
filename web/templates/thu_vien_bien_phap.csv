@@ -1,0 +1,23 @@
+﻿ma_bien_phap,ma_phuong_dien,ma_chi_bao,noi_dung,doi_tuong,nguon,trang_thai_duyet
+BP-CT1-01,CT1,Q_C1_1,"Công bố đề cương, chuẩn đầu ra và kế hoạch học kết hợp ngay tuần 1 trên LMS; giải thích mối liên hệ chuẩn đầu ra – hoạt động – đánh giá.",GV,Hướng dẫn thiết kế học phần BL (mẫu),da_duyet
+BP-CT1-02,CT1,Q_C1_3,"Rà soát nội dung với doanh nghiệp, cựu sinh viên; bổ sung tình huống thực tiễn vào từng chương.",khoa,Quy trình rà soát chương trình (mẫu),da_duyet
+BP-CT1-03,CT1,Q_C1_4,"Điều chỉnh tỷ lệ trực tiếp – trực tuyến theo đặc thù nội dung: lý thuyết trực tuyến, thực hành và thảo luận trực tiếp.",GV,Hướng dẫn thiết kế học phần BL (mẫu),da_duyet
+BP-CT2-01,CT2,Q_C2_3,Cố định lịch học trực tuyến cả học kỳ; mọi thay đổi thông báo trước ít nhất 48 giờ trên LMS.,khoa,Quy định tổ chức đào tạo BL (mẫu),da_duyet
+BP-CT2-02,CT2,Q_C2_2,Tổ chức buổi định hướng sử dụng LMS cho sinh viên năm thứ nhất trong tuần đầu học kỳ.,Trường,Kế hoạch chuyển đổi số (mẫu),da_duyet
+BP-CT2-03,CT2,Q_C2_9,"Thiết lập đầu mối hỗ trợ sự cố học trực tuyến (đường dây nóng, biểu mẫu trực tuyến) và công bố trên LMS.",Trường,Kế hoạch chuyển đổi số (mẫu),da_duyet
+BP-IN1-01,IN1,Q_I1_1,Bổ sung học liệu số còn thiếu theo danh mục của đề cương trước tuần 3.,GV,Chuẩn học liệu số (mẫu),da_duyet
+BP-IN1-02,IN1,Q_I1_4,"Kiểm tra chất lượng video bài giảng (âm thanh, phụ đề) trước khi đăng; ưu tiên video ngắn 8 – 12 phút.",GV,Chuẩn học liệu số (mẫu),da_duyet
+BP-IN1-03,IN1,Q_I1_2,"Sắp xếp học liệu trên LMS theo tuần, có mục lục và hướng dẫn tìm.",GV,Chuẩn học liệu số (mẫu),da_duyet
+BP-IN1-04,IN1,Q_I1_5,"Rà soát đường truyền, điểm phát wifi tại phòng học kết hợp; ưu tiên khu có nhiều phản ánh.",Trường,Kế hoạch hạ tầng CNTT (mẫu),da_duyet
+BP-IN2-01,IN2,Q_I2_2,"Tổ chức dự giờ, chia sẻ kinh nghiệm giảng dạy kết hợp trong bộ môn mỗi tháng một lần.",khoa,Quy chế sinh hoạt chuyên môn (mẫu),da_duyet
+BP-IN2-02,IN2,Q_I2_3,"Bồi dưỡng kỹ năng dùng công cụ dạy học số (bảng tương tác, khảo sát nhanh, phòng nhóm) cho giảng viên.",Trường,Kế hoạch bồi dưỡng giảng viên (mẫu),da_duyet
+BP-IN2-03,IN2,Q_I2_4,"Bổ sung ví dụ, tình huống thực tiễn vào mỗi bài giảng; dành 5 phút cuối buổi tóm tắt ý chính.",GV,Hướng dẫn thiết kế học phần BL (mẫu),cho_duyet
+BP-IN3-01,IN3,Q_I3_4,"Công bố rõ các kênh hỗ trợ kỹ thuật, học thuật và thời gian phản hồi cam kết (trong 24 giờ làm việc).",Trường,Quy trình hỗ trợ người học (mẫu),da_duyet
+BP-IN3-02,IN3,Q_I3_3,Tổ chức giờ giải đáp trực tuyến cố định hằng tuần cho lớp học phần.,GV,Quy trình hỗ trợ người học (mẫu),da_duyet
+BP-IN3-03,IN3,Q_I3_2,Hướng dẫn phương pháp tự học trong môi trường kết hợp qua buổi sinh hoạt lớp và tài liệu ngắn.,khoa,Quy trình hỗ trợ người học (mẫu),da_duyet
+BP-PS1-01,PS1,Q_P1_3,"Trả kết quả bài tập trực tuyến trong vòng 7 ngày, kèm nhận xét ngắn cho từng bài.",GV,Quy định đánh giá học phần (mẫu),da_duyet
+BP-PS1-02,PS1,Q_P1_1,Công bố tiêu chí chấm (rubric) cùng đề bài; giải thích tiêu chí trong buổi học trực tiếp.,GV,Quy định đánh giá học phần (mẫu),da_duyet
+BP-PS1-03,PS1,Q_P1_6,Theo dõi tiến độ trên LMS hằng tuần; nhắc riêng sinh viên chậm tiến độ trước hạn nộp.,GV,Hướng dẫn quản lý lớp trực tuyến (mẫu),da_duyet
+BP-PS2-01,PS2,Q_P2_6,"Thiết kế thảo luận trực tuyến có câu hỏi định hướng, người điều phối và hạn phản hồi.",GV,Hướng dẫn dạy học tích cực (mẫu),da_duyet
+BP-PS2-02,PS2,Q_P2_7,"Tăng hoạt động nhóm, dự án gắn với tình huống thực tế; phân vai rõ trong nhóm.",GV,Hướng dẫn dạy học tích cực (mẫu),da_duyet
+BP-PS2-03,PS2,Q_P2_1,"Dùng câu hỏi tương tác, khảo sát nhanh mỗi 15 – 20 phút trong buổi học trực tuyến.",GV,Hướng dẫn dạy học tích cực (mẫu),da_duyet

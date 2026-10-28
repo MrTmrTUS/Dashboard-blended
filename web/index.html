@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chất lượng giảng dạy BL · Trường Đại học Thành Đông</title>
+    <meta name="description" content="MVP dashboard đánh giá chất lượng giảng dạy trong môi trường học tập kết hợp (Blended Learning) – Nội dung 3." />
+    <meta name="theme-color" content="#272c63" />
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="assets/css/tokens.css" />
+    <link rel="stylesheet" href="assets/css/app.css" />
+    <!-- Thư viện đóng gói kèm ứng dụng, không tải từ mạng (mục 5.6) -->
+    <script src="vendor/echarts/echarts.min.js" defer></script>
+    <script src="vendor/echarts/langVI.js" defer></script>
+    <script type="module" src="js/main.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Bỏ qua đến nội dung chính</a>
+    <div id="app" class="app">
+      <header class="topbar" id="topbar"></header>
+      <div class="filterbar" id="filterbar" hidden></div>
+      <div class="layout">
+        <main id="main" tabindex="-1"></main>
+        <aside class="assistant" id="assistant" aria-label="Trợ lý AI" hidden></aside>
+      </div>
+      <footer class="app-footer" id="footer"></footer>
+      <nav class="bottomnav" id="bottomnav" aria-label="Màn hình chính"></nav>
+      <button type="button" class="assistant-fab" id="assistant-fab" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.9L19 9.7l-5.2 1.8L12 16.4l-1.8-4.9L5 9.7l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>
+        Trợ lý AI
+      </button>
+    </div>
+    <noscript>
+      <p style="padding: 24px">Dashboard cần bật JavaScript để chạy.</p>
+    </noscript>
+  </body>
+</html>

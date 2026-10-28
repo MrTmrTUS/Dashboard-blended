@@ -1,0 +1,23 @@
+﻿loai,ma,gia_tri,can_duoi,can_tren,ghi_chu
+trong_so,CT1,"0,12",,,Nội dung 2
+trong_so,IN2,"0,17",,,Nội dung 2
+trong_so,PS1,"0,19",,,Nội dung 2
+trong_so,PS2,"0,15",,,Nội dung 2
+trong_so,CT2,"0,11",,,Nội dung 2
+trong_so,IN1,"0,16",,,Nội dung 2
+trong_so,IN3,"0,10",,,Nội dung 2
+bat_bien,CT1,1,,,"Bất biến vô hướng; ΔCFI = 0,004"
+bat_bien,IN2,1,,,"Bất biến vô hướng; ΔCFI = 0,006"
+bat_bien,PS1,1,,,"Bất biến vô hướng; ΔCFI = 0,007"
+bat_bien,PS2,1,,,Bất biến vô hướng từng phần; Giải phóng hệ số chặn Q_P2_4
+bat_bien,CT2,0,,,"Chỉ đạt bất biến hệ số tải; ΔCFI vô hướng = 0,016 > 0,010: hai trường hiểu thang đo điều kiện triển khai khác nhau"
+bat_bien,IN1,1,,,"Bất biến vô hướng; ΔCFI = 0,008"
+bat_bien,IN3,0,,,"Chỉ đạt bất biến cấu hình; Cấu trúc hỗ trợ người học khác nhau giữa hai trường (ΔCFI hệ số tải = 0,021)"
+bat_bien,PT1,1,,,"Bất biến vô hướng; ΔCFI = 0,005"
+bat_bien,PT2,0,,,"Chỉ đạt bất biến hệ số tải; ΔCFI vô hướng = 0,013 > 0,010"
+chenh_lech_tiem_an,CT1,"0,12","-0,02","0,26",TDU − trường đối sánh
+chenh_lech_tiem_an,IN2,"0,18","0,04","0,32",TDU − trường đối sánh
+chenh_lech_tiem_an,PS1,"-0,05","-0,19","0,09",TDU − trường đối sánh
+chenh_lech_tiem_an,PS2,"0,08","-0,07","0,23",TDU − trường đối sánh
+chenh_lech_tiem_an,IN1,"-0,21","-0,36","-0,06",TDU − trường đối sánh
+chenh_lech_tiem_an,PT1,"0,10","-0,04","0,24",TDU − trường đối sánh

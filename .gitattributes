@@ -1,0 +1,4 @@
+# Giữ nguyên CRLF và BOM của tệp CSV mẫu (Excel tiếng Việt cần BOM để hiện đúng dấu).
+*.csv -text
+# Thư viện đóng gói sẵn: không so sánh nội dung.
+web/vendor/** -diff linguist-vendored

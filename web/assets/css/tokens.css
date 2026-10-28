@@ -1,0 +1,68 @@
+/* Biến giao diện theo nhận diện TDU (mục 9 – Hướng dẫn giao diện).
+   Màu trạng thái chỉ dùng cho trạng thái và luôn đi kèm biểu tượng + chữ. */
+:root {
+  color-scheme: light;
+
+  /* Nhận diện */
+  --navy: #272c63;
+  --navy-800: #1e2250;
+  --navy-600: #3a4185;
+  --blue: #518ecf; /* đường xu hướng (không dùng cho chữ nhỏ: tương phản 3,4:1) */
+  --blue-dark: #2f6bb3; /* liên kết, nhóm lõi sư phạm */
+  --gold: #b5801c; /* nhóm điều kiện tổ chức (mảng màu) */
+  --gold-ink: #8a5f0e; /* chữ màu vàng đồng: 5,6:1 */
+  --grey: #5b6478;
+  --bg: #eef3fa;
+
+  /* Mặt nền và chữ */
+  --surface: #ffffff;
+  --surface-2: #f6f8fc;
+  --ink: #1f2437;
+  --ink-2: #5b6478;
+  --muted: #6b7385;
+  --line: #dde3ee;
+  --line-soft: #e9edf4;
+  --grid: #e6eaf1;
+  --axis: #c3cad8;
+  --focus: #2f6bb3;
+
+  /* Trạng thái: xanh = đạt, vàng = theo dõi, đỏ = can thiệp, xám = chưa đủ dữ liệu */
+  --ok: #2e7d4f;
+  --ok-bg: #e3f1e8;
+  --ok-ink: #1e5e3a;
+  --ok-tint: #cbe6d5;
+  --warn: #e0a100;
+  --warn-bg: #fdf1d2;
+  --warn-ink: #6b4d00;
+  --warn-tint: #f8de9a;
+  --alert: #c2453d;
+  --alert-bg: #fbe7e5;
+  --alert-ink: #9a2f28;
+  --alert-tint: #f1c1bc;
+  --na: #9aa3b5;
+  --na-bg: #eceff4;
+  --na-ink: #4a5263;
+  --na-tint: #e3e6ec;
+
+  /* Màu nhóm phương diện (cùng phương diện – cùng màu trên mọi biểu đồ) */
+  --ped: #2f6bb3;
+  --org: #b5801c;
+
+  /* Hình khối */
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 6px;
+  --shadow: 0 1px 2px rgba(39, 44, 99, 0.06), 0 6px 18px rgba(39, 44, 99, 0.06);
+  --shadow-lg: 0 10px 40px rgba(31, 36, 55, 0.18);
+  --topbar-h: 56px;
+  --filter-h: 56px;
+  --assistant-w: 360px;
+
+  /* Chữ: phông hệ thống (không tải phông trực tuyến) */
+  --font: 'Segoe UI', system-ui, -apple-system, Roboto, Arial, 'Helvetica Neue', sans-serif;
+  --fs-page: 20px;
+  --fs-h2: 16px;
+  --fs-body: 14px;
+  --fs-small: 13px;
+  --fs-caption: 12px;
+}

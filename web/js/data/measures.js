@@ -1,0 +1,57 @@
+// Thư viện biện pháp cải tiến mẫu (mục 3.6, Phụ lục A: thu_vien_bien_phap.csv).
+// Trạng thái duyệt: da_duyet (đã duyệt – được AI gợi ý), cho_duyet, tu_choi.
+
+export const MEASURES = [
+  { code: 'BP-CT1-01', dim: 'CT1', indicator: 'Q_C1_1', target: 'GV', source: 'Hướng dẫn thiết kế học phần BL (mẫu)', status: 'da_duyet',
+    text: 'Công bố đề cương, chuẩn đầu ra và kế hoạch học kết hợp ngay tuần 1 trên LMS; giải thích mối liên hệ chuẩn đầu ra – hoạt động – đánh giá.' },
+  { code: 'BP-CT1-02', dim: 'CT1', indicator: 'Q_C1_3', target: 'khoa', source: 'Quy trình rà soát chương trình (mẫu)', status: 'da_duyet',
+    text: 'Rà soát nội dung với doanh nghiệp, cựu sinh viên; bổ sung tình huống thực tiễn vào từng chương.' },
+  { code: 'BP-CT1-03', dim: 'CT1', indicator: 'Q_C1_4', target: 'GV', source: 'Hướng dẫn thiết kế học phần BL (mẫu)', status: 'da_duyet',
+    text: 'Điều chỉnh tỷ lệ trực tiếp – trực tuyến theo đặc thù nội dung: lý thuyết trực tuyến, thực hành và thảo luận trực tiếp.' },
+  { code: 'BP-CT2-01', dim: 'CT2', indicator: 'Q_C2_3', target: 'khoa', source: 'Quy định tổ chức đào tạo BL (mẫu)', status: 'da_duyet',
+    text: 'Cố định lịch học trực tuyến cả học kỳ; mọi thay đổi thông báo trước ít nhất 48 giờ trên LMS.' },
+  { code: 'BP-CT2-02', dim: 'CT2', indicator: 'Q_C2_2', target: 'Trường', source: 'Kế hoạch chuyển đổi số (mẫu)', status: 'da_duyet',
+    text: 'Tổ chức buổi định hướng sử dụng LMS cho sinh viên năm thứ nhất trong tuần đầu học kỳ.' },
+  { code: 'BP-CT2-03', dim: 'CT2', indicator: 'Q_C2_9', target: 'Trường', source: 'Kế hoạch chuyển đổi số (mẫu)', status: 'da_duyet',
+    text: 'Thiết lập đầu mối hỗ trợ sự cố học trực tuyến (đường dây nóng, biểu mẫu trực tuyến) và công bố trên LMS.' },
+  { code: 'BP-IN1-01', dim: 'IN1', indicator: 'Q_I1_1', target: 'GV', source: 'Chuẩn học liệu số (mẫu)', status: 'da_duyet',
+    text: 'Bổ sung học liệu số còn thiếu theo danh mục của đề cương trước tuần 3.' },
+  { code: 'BP-IN1-02', dim: 'IN1', indicator: 'Q_I1_4', target: 'GV', source: 'Chuẩn học liệu số (mẫu)', status: 'da_duyet',
+    text: 'Kiểm tra chất lượng video bài giảng (âm thanh, phụ đề) trước khi đăng; ưu tiên video ngắn 8 – 12 phút.' },
+  { code: 'BP-IN1-03', dim: 'IN1', indicator: 'Q_I1_2', target: 'GV', source: 'Chuẩn học liệu số (mẫu)', status: 'da_duyet',
+    text: 'Sắp xếp học liệu trên LMS theo tuần, có mục lục và hướng dẫn tìm.' },
+  { code: 'BP-IN1-04', dim: 'IN1', indicator: 'Q_I1_5', target: 'Trường', source: 'Kế hoạch hạ tầng CNTT (mẫu)', status: 'da_duyet',
+    text: 'Rà soát đường truyền, điểm phát wifi tại phòng học kết hợp; ưu tiên khu có nhiều phản ánh.' },
+  { code: 'BP-IN2-01', dim: 'IN2', indicator: 'Q_I2_2', target: 'khoa', source: 'Quy chế sinh hoạt chuyên môn (mẫu)', status: 'da_duyet',
+    text: 'Tổ chức dự giờ, chia sẻ kinh nghiệm giảng dạy kết hợp trong bộ môn mỗi tháng một lần.' },
+  { code: 'BP-IN2-02', dim: 'IN2', indicator: 'Q_I2_3', target: 'Trường', source: 'Kế hoạch bồi dưỡng giảng viên (mẫu)', status: 'da_duyet',
+    text: 'Bồi dưỡng kỹ năng dùng công cụ dạy học số (bảng tương tác, khảo sát nhanh, phòng nhóm) cho giảng viên.' },
+  { code: 'BP-IN2-03', dim: 'IN2', indicator: 'Q_I2_4', target: 'GV', source: 'Hướng dẫn thiết kế học phần BL (mẫu)', status: 'cho_duyet',
+    text: 'Bổ sung ví dụ, tình huống thực tiễn vào mỗi bài giảng; dành 5 phút cuối buổi tóm tắt ý chính.' },
+  { code: 'BP-IN3-01', dim: 'IN3', indicator: 'Q_I3_4', target: 'Trường', source: 'Quy trình hỗ trợ người học (mẫu)', status: 'da_duyet',
+    text: 'Công bố rõ các kênh hỗ trợ kỹ thuật, học thuật và thời gian phản hồi cam kết (trong 24 giờ làm việc).' },
+  { code: 'BP-IN3-02', dim: 'IN3', indicator: 'Q_I3_3', target: 'GV', source: 'Quy trình hỗ trợ người học (mẫu)', status: 'da_duyet',
+    text: 'Tổ chức giờ giải đáp trực tuyến cố định hằng tuần cho lớp học phần.' },
+  { code: 'BP-IN3-03', dim: 'IN3', indicator: 'Q_I3_2', target: 'khoa', source: 'Quy trình hỗ trợ người học (mẫu)', status: 'da_duyet',
+    text: 'Hướng dẫn phương pháp tự học trong môi trường kết hợp qua buổi sinh hoạt lớp và tài liệu ngắn.' },
+  { code: 'BP-PS1-01', dim: 'PS1', indicator: 'Q_P1_3', target: 'GV', source: 'Quy định đánh giá học phần (mẫu)', status: 'da_duyet',
+    text: 'Trả kết quả bài tập trực tuyến trong vòng 7 ngày, kèm nhận xét ngắn cho từng bài.' },
+  { code: 'BP-PS1-02', dim: 'PS1', indicator: 'Q_P1_1', target: 'GV', source: 'Quy định đánh giá học phần (mẫu)', status: 'da_duyet',
+    text: 'Công bố tiêu chí chấm (rubric) cùng đề bài; giải thích tiêu chí trong buổi học trực tiếp.' },
+  { code: 'BP-PS1-03', dim: 'PS1', indicator: 'Q_P1_6', target: 'GV', source: 'Hướng dẫn quản lý lớp trực tuyến (mẫu)', status: 'da_duyet',
+    text: 'Theo dõi tiến độ trên LMS hằng tuần; nhắc riêng sinh viên chậm tiến độ trước hạn nộp.' },
+  { code: 'BP-PS2-01', dim: 'PS2', indicator: 'Q_P2_6', target: 'GV', source: 'Hướng dẫn dạy học tích cực (mẫu)', status: 'da_duyet',
+    text: 'Thiết kế thảo luận trực tuyến có câu hỏi định hướng, người điều phối và hạn phản hồi.' },
+  { code: 'BP-PS2-02', dim: 'PS2', indicator: 'Q_P2_7', target: 'GV', source: 'Hướng dẫn dạy học tích cực (mẫu)', status: 'da_duyet',
+    text: 'Tăng hoạt động nhóm, dự án gắn với tình huống thực tế; phân vai rõ trong nhóm.' },
+  { code: 'BP-PS2-03', dim: 'PS2', indicator: 'Q_P2_1', target: 'GV', source: 'Hướng dẫn dạy học tích cực (mẫu)', status: 'da_duyet',
+    text: 'Dùng câu hỏi tương tác, khảo sát nhanh mỗi 15 – 20 phút trong buổi học trực tuyến.' },
+];
+
+export const MEASURE_STATUS = {
+  da_duyet: 'Đã duyệt',
+  cho_duyet: 'Chờ duyệt',
+  tu_choi: 'Từ chối',
+};
+
+export const MEASURE_TARGETS = { GV: 'Giảng viên', khoa: 'Khoa', 'Trường': 'Trường' };
