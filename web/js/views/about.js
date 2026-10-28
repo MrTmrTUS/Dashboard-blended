@@ -43,7 +43,7 @@ export const AboutView = {
         })}
         ${plainCard({
           title: 'Thử nhanh theo vai trò',
-          sub: 'Đổi vai trò ở góc phải trên cùng, rồi mở đường dẫn',
+          sub: 'Đăng nhập tài khoản quản trị, bấm vào tên ở góc phải trên cùng › Xem thử dưới vai trò, rồi mở đường dẫn',
           body: html`<ol class="small" style="padding-left:18px;margin:0">${TOUR.map((t) => html`<li style="margin-bottom:8px"><b>${users.get(t.role)?.name ?? t.role}</b> – ${t.text} <a href="${t.href}">Mở</a></li>`)}</ol>`,
         })}
       </div>

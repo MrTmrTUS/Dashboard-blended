@@ -1,6 +1,6 @@
 // M0 – Quản trị và kiểm chứng (mục 3.6): dữ liệu và công bố đợt, nhập dữ liệu, cấu hình có lịch sử,
 // danh mục, người dùng và nhật ký, thư viện biện pháp, kiểm chứng TC1 – TC4, mô-đun AI.
-import { ROLES, SCREENS } from '../access.js';
+import { ROLES } from '../access.js';
 import { lineagePlans, waveLabel } from '../api.js';
 import { checkText } from '../core/factcheck.js';
 import { CONFIG_FIELDS, DEFAULT_CONFIG, mergeConfig } from '../core/config.js';
@@ -13,11 +13,12 @@ import { classifyComment } from '../ai/classify.js';
 import { allowedConstants, SYSTEM_PROMPT, testOllama } from '../ai/generator.js';
 import { exportCsv } from '../data/dataset-io.js';
 import { MEASURE_STATUS, MEASURE_TARGETS } from '../data/measures.js';
-import { accessLog, configStore, feedback, measureStore, plans as planStore, state, waveStatus } from '../store.js';
+import { configStore, feedback, measureStore, plans as planStore, state, waveStatus } from '../store.js';
 import { banner, codeTag, dataTable, openDialog, pageHead, plainCard, statusChip, toast } from '../ui/components.js';
 import { downloadText, esc, html, on, raw } from '../ui/dom.js';
 import { icon } from '../ui/icons.js';
 import { renderImportTab, mountImportTab } from './admin-import.js';
+import { renderUsersTab, mountUsersTab } from './admin-users.js';
 import { renderVerifyTab, mountVerifyTab } from './admin-verify.js';
 import { library } from './assistant.js';
 import { PLAN_STATUS } from './classes.js';
@@ -27,7 +28,7 @@ const TABS = [
   { id: 'nhap', label: 'Nhập dữ liệu', icon: 'upload' },
   { id: 'cau-hinh', label: 'Cấu hình', icon: 'admin' },
   { id: 'danh-muc', label: 'Danh mục', icon: 'book' },
-  { id: 'nguoi-dung', label: 'Người dùng, nhật ký', icon: 'user' },
+  { id: 'nguoi-dung', label: 'Tài khoản, nhật ký', icon: 'user' },
   { id: 'thu-vien', label: 'Thư viện biện pháp', icon: 'book' },
   { id: 'kiem-chung', label: 'Kiểm chứng TC1 – TC4', icon: 'check' },
   { id: 'tro-ly-ai', label: 'Mô-đun AI', icon: 'sparkle' },
@@ -228,7 +229,7 @@ function renderConfigTab(ctx) {
         emptyText: 'Chưa có thay đổi – đang dùng giá trị khởi đầu',
         columns: [
           { label: 'Thời điểm', render: (h) => fmtDateTime(h.time) },
-          { label: 'Người đổi', render: (h) => html`${h.userName}<br><span class="caption">${h.role}</span>` },
+          { label: 'Người đổi', render: (h) => html`${h.userName}<br><span class="caption">${h.role}${h.account ? ` · tài khoản ${h.account}` : ''}</span>` },
           { label: 'Tham số', render: (h) => CONFIG_FIELDS.find((f) => f.key === h.key)?.label ?? h.key },
           { label: 'Cũ → mới', render: (h) => `${fmtVal(h.from)} → ${fmtVal(h.to)}` },
           { label: 'Ghi chú', key: 'note' },
@@ -385,57 +386,6 @@ function renderCatalogTab() {
       sub: 'Lời dẫn chỉ báo trong MVP là bản minh họa – thay bằng lời dẫn chính thức của bộ tiêu chí',
       body: html`<div class="table-scroll">${dataTable({ compact: true, columns: [{ label: 'Mã chỉ báo', key: 'code' }, { label: 'Nhân tố', render: (i) => codeTag(i.factor) }, { label: 'Lời dẫn', key: 'text' }], rows: INDICATORS })}</div>`,
     })}</div>`;
-}
-
-// ---- Người dùng, vai trò, nhật ký truy cập -------------------------------------------------------
-
-function renderUsersTab(ctx) {
-  const log = accessLog.list();
-  const byRole = Object.keys(ROLES).map((r) => ({ role: r, ...ROLES[r], count: state.users.filter((u) => u.role === r).length }));
-  return html`
-    ${banner({ kind: 'info', title: 'Đăng nhập trong bản chính thức', body: 'Tài khoản Trường (LDAP/OIDC) nếu đơn vị CNTT hỗ trợ; nếu không thì tài khoản nội bộ cho học kỳ thí điểm (mục 10). Bản MVP dùng tài khoản mô phỏng để trình diễn phân quyền theo vai trò và phạm vi.' })}
-    ${plainCard({
-      title: 'Vai trò và phạm vi dữ liệu (mục 2)',
-      body: dataTable({
-        columns: [
-          { label: 'Vai trò', render: (r) => html`<b>${r.label}</b>` },
-          { label: 'Câu hỏi chính', key: 'question' },
-          { label: 'Màn hình', render: (r) => r.screens.map((s) => `${s} ${SCREENS[s].label}`).join(', ') },
-          { label: 'Phạm vi dữ liệu', key: 'scope' },
-          { label: 'Tài khoản mô phỏng', num: true, render: (r) => fmtInt(r.count) },
-        ],
-        rows: byRole,
-      }),
-    })}
-    <div class="mt-16">${plainCard({
-      title: 'Nhật ký truy cập dữ liệu cấp sinh viên',
-      sub: `Mọi lượt xem dữ liệu cấp sinh viên đều được ghi (mục 5.6) · ${fmtInt(log.length)} lượt`,
-      actions: html`<button type="button" class="btn btn--sm" data-export-log>${icon('download')}CSV</button>${ctx.user.role === 'admin' ? html`<button type="button" class="btn btn--sm btn--danger" data-clear-log>Xóa nhật ký</button>` : ''}`,
-      body: html`<div class="table-scroll">${dataTable({
-        compact: true,
-        emptyText: 'Chưa có lượt xem nào – thử vai trò Giảng viên hoặc Cố vấn học tập rồi mở màn hình Sinh viên',
-        columns: [
-          { label: 'Thời điểm', render: (l) => fmtDateTime(l.time) },
-          { label: 'Người xem', render: (l) => html`${l.userName}<br><span class="caption">${l.role}</span>` },
-          { label: 'Hành động', key: 'action' },
-          { label: 'Đối tượng', key: 'target' },
-          { label: 'Số bản ghi', num: true, render: (l) => fmtInt(l.count) },
-        ],
-        rows: log.slice(0, 300),
-      })}</div>`,
-    })}</div>`;
-}
-
-function mountUsersTab(root, ctx) {
-  on(root, 'click', '[data-export-log]', () => {
-    const rows = accessLog.list().map((l) => ({ thoi_diem: fmtDateTime(l.time), nguoi_xem: l.userName, vai_tro: l.role, hanh_dong: l.action, doi_tuong: l.target, so_ban_ghi: l.count }));
-    downloadText('nhat_ky_truy_cap.csv', toCsv(['thoi_diem', 'nguoi_xem', 'vai_tro', 'hanh_dong', 'doi_tuong', 'so_ban_ghi'], rows));
-  });
-  on(root, 'click', '[data-clear-log]', () => {
-    if (!confirm('Xóa toàn bộ nhật ký truy cập trong trình duyệt này?')) return;
-    accessLog.clear();
-    ctx.route();
-  });
 }
 
 // ---- Thư viện biện pháp -----------------------------------------------------------------------

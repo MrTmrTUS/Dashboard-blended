@@ -1,17 +1,20 @@
-// Điểm khởi động: nạp dữ liệu → tính toán theo lô → dựng khung → định tuyến (mục 5.8).
-import { AccessDenied, buildUsers, canSee, homeScreen, ROLES, SCREENS } from './access.js';
+// Điểm khởi động: đăng nhập → nạp dữ liệu → tính toán theo lô → dựng khung → định tuyến (mục 5.8).
+import { AccessDenied, accountUser, buildUsers, canSee, homeScreen, ROLES, SCREENS } from './access.js';
 import { resolveFilters } from './api.js';
+import { currentAccount, initAuth, logout, setViewAs, viewAsId } from './auth.js';
 import { classifyComment } from './ai/classify.js';
 import { DEFAULT_CONFIG, mergeConfig } from './core/config.js';
 import { computeMart } from './core/engine.js';
 import { buildSyntheticDataset } from './data/synthetic.js';
-import { configStore, emit, idb, load, measureStore, notifRead, save, state, waveStatus } from './store.js';
-import { busy, emptyState, pageHead, plainCard } from './ui/components.js';
+import { configStore, emit, idb, measureStore, notifRead, state, waveStatus } from './store.js';
+import { probeLogo, ORG_NAME } from './ui/brand.js';
+import { banner, busy, emptyState, pageHead, plainCard } from './ui/components.js';
 import { disposeCharts } from './ui/charts.js';
 import { html, isMobile, on, qs, setHTML } from './ui/dom.js';
 import { icon } from './ui/icons.js';
 import { clearAiCache, renderAssistant } from './views/assistant.js';
-import { closePopover, notifMenu, openPopover, renderBottomNav, renderFilterBar, renderFooter, renderTopbar, roleMenu } from './views/shell.js';
+import { closePopover, notifMenu, openPopover, renderBottomNav, renderFilterBar, renderFooter, renderTopbar, userMenu } from './views/shell.js';
+import { renderLogin } from './views/login.js';
 import { OverviewView } from './views/overview.js';
 import { ClassListView, ClassDetailView } from './views/classes.js';
 import { StudentsView } from './views/students.js';
@@ -60,8 +63,7 @@ export async function replaceDataset(ds, { key = 'import', persist = true } = {}
   state.datasetKey = key;
   applyOverlays(state.dataset);
   state.users = buildUsers(state.dataset);
-  if (!state.users.some((u) => u.id === state.user?.id)) setUser('qlcl', { silent: true });
-  else state.user = state.users.find((u) => u.id === state.user.id);
+  resolveUser();
   recompute({ reason: 'dataset' });
   busy(false);
   route();
@@ -71,14 +73,40 @@ export function refreshOverlays() {
   applyOverlays(state.dataset);
 }
 
-function setUser(id, { silent = false } = {}) {
-  state.user = state.users.find((u) => u.id === id) || state.users.find((u) => u.id === 'qlcl') || state.users[0];
-  save('user', state.user.id);
-  if (!silent) {
-    closePopover();
-    location.hash = `#/${SCREENS[homeScreen(state.user)].route}`;
-    route();
-  }
+// ---- Tài khoản ------------------------------------------------------------------------------
+
+// Người dùng hiệu lực: chính tài khoản đăng nhập, hoặc người dùng mô phỏng mà quản trị đang "xem thử".
+function resolveUser() {
+  const acc = state.account;
+  const viewId = acc.role === 'admin' ? viewAsId() : null;
+  const sim = viewId ? state.users.find((u) => u.id === viewId) : null;
+  if (viewId && !sim) setViewAs(null);
+  state.user = sim ? { ...sim, viewAs: true } : accountUser(acc, state.dataset);
+}
+
+function switchView(id) {
+  if (state.account?.role !== 'admin') return;
+  setViewAs(id);
+  resolveUser();
+  closePopover();
+  location.hash = `#/${SCREENS[homeScreen(state.user)].route}`;
+  route();
+}
+
+// Đăng xuất (hoặc phiên hết hiệu lực): tải lại trang để về màn hình đăng nhập, không giữ dữ liệu trong bộ nhớ.
+function endSession(notice, { keepPlace = false } = {}) {
+  logout(notice);
+  if (keepPlace) location.reload();
+  else location.replace(location.pathname + location.search);
+}
+
+// Gọi sau khi quản trị sửa danh sách tài khoản trên máy này.
+export function accountsChanged() {
+  const acc = currentAccount();
+  if (!acc) return endSession('Tài khoản đang dùng đã thay đổi – vui lòng đăng nhập lại.');
+  state.account = acc;
+  resolveUser();
+  route();
 }
 
 // ---- Định tuyến ---------------------------------------------------------------------------
@@ -133,15 +161,29 @@ export function navigate(query, { replace = false, path } = {}) {
 }
 
 export function route() {
+  const acc = currentAccount();
+  if (!acc || acc.username !== state.account?.username) return endSession('Phiên đăng nhập đã hết hạn hoặc tài khoản đã thay đổi – vui lòng đăng nhập lại.', { keepPlace: true });
+  if (acc.updatedAt !== state.account.updatedAt) {
+    state.account = acc;
+    resolveUser();
+  }
   const user = state.user;
   const r = parseHash();
   const { view, params } = resolveView(r, user);
-  const main = qs('#main');
   const shell = qs('#app');
-  disposeCharts(main);
+  disposeCharts(qs('#main'));
   closePopover();
 
-  const ctx = { user, params, query: r.query, f: resolveFilters(user, r.query), screen: view?.screen ?? null, navigate, route, recompute, replaceDataset, refreshOverlays };
+  const ctx = { user, account: state.account, params, query: r.query, f: resolveFilters(user, r.query), screen: view?.screen ?? null, navigate, route, recompute, replaceDataset, refreshOverlays, accountsChanged };
+  const viewing = user.viewAs
+    ? banner({
+        kind: 'warn',
+        iconText: '👁',
+        title: `Đang xem thử dưới vai trò ${user.roleLabel} – ${user.name}`,
+        body: `Màn hình và dữ liệu hiển thị đúng phạm vi của vai trò này. Nhật ký vẫn ghi theo tài khoản ${state.account.username}.`,
+        actions: html`<button type="button" class="btn btn--sm" data-view-self>Trở về tài khoản quản trị</button>`,
+      })
+    : '';
   let content;
   try {
     if (!view) throw Object.assign(new Error('notfound'), { notFound: true });
@@ -153,14 +195,14 @@ export function route() {
     content = errorPage(e, user);
     current = { view: null, ctx };
     renderChrome(ctx, null);
-    setHTML(main, content);
+    freshMain(html`${viewing}${content}`);
     renderAside(null, ctx);
     if (!(e instanceof AccessDenied) && !e.notFound) console.error(e);
     return;
   }
   current = { view, ctx };
   renderChrome(ctx, view);
-  setHTML(main, content);
+  const main = freshMain(html`${viewing}${content}`);
   shell.classList.toggle('is-wide', view.layout !== 'assistant');
   try {
     view.mount?.(main, ctx);
@@ -176,7 +218,17 @@ export function route() {
     if (route.lastKey !== undefined) qs('.page-title', main)?.focus({ preventScroll: true });
   }
   route.lastKey = key;
-  document.title = `${view.title?.(ctx) ?? SCREENS[view.screen]?.label ?? 'Dashboard'} · Chất lượng giảng dạy BL`;
+  document.title = `${view.title?.(ctx) ?? SCREENS[view.screen]?.label ?? 'Dashboard'} · Chất lượng giảng dạy BL · ${ORG_NAME}`;
+}
+
+// Mỗi lần vẽ thay #main bằng phần tử mới: trình nghe sự kiện mà màn hình trước gắn vào #main (qua mount)
+// không sót lại – nếu không, quay lại một trang rồi bấm nút sẽ chạy cả trình nghe cũ (mở hai hộp thoại…).
+function freshMain(content) {
+  const old = qs('#main');
+  const main = old.cloneNode(false);
+  setHTML(main, content);
+  old.replaceWith(main);
+  return main;
 }
 
 // Vùng cuộn (bảng rộng trên điện thoại) phải dùng được bằng bàn phím (WCAG 2.1.1).
@@ -256,14 +308,17 @@ function bindChrome() {
     fb.classList.toggle('is-open', open);
     btn.setAttribute('aria-expanded', String(open));
   });
-  on(app, 'click', '#btn-role', (e, btn) => {
+  on(app, 'click', '#btn-user', (e, btn) => {
     if (qs('.popover')) return closePopover();
-    openPopover(btn, roleMenu(current.ctx), (pop) => {
-      pop.setAttribute('aria-label', 'Chọn vai trò');
+    openPopover(btn, userMenu(current.ctx), (pop) => {
+      pop.setAttribute('aria-label', 'Tài khoản');
       pop.style.width = 'min(400px, calc(100vw - 24px))';
-      on(pop, 'click', '[data-user]', (ev, item) => setUser(item.dataset.user));
+      on(pop, 'click', '[data-user]', (ev, item) => switchView(item.dataset.user));
+      on(pop, 'click', '[data-view-self]', () => switchView(null));
+      on(pop, 'click', '[data-logout]', () => endSession('Bạn đã đăng xuất.'));
     });
   });
+  on(app, 'click', '#main [data-view-self]', () => switchView(null));
   on(app, 'click', '#btn-notif', (e, btn) => {
     if (qs('.popover')) return closePopover();
     const pop = openPopover(btn, notifMenu(current.ctx));
@@ -311,6 +366,13 @@ function bindChrome() {
     }
   });
   window.addEventListener('hashchange', route);
+  // Liên kết "Bỏ qua đến nội dung chính": href="#main" sẽ đổi đường dẫn #/… của bộ định tuyến, nên chỉ chuyển tiêu điểm.
+  qs('.skip-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    const main = qs('#main');
+    main.focus();
+    main.scrollIntoView();
+  });
 }
 
 function closeDrawer() {
@@ -321,14 +383,32 @@ function closeDrawer() {
 
 // ---- Khởi động ---------------------------------------------------------------------------
 
-async function boot() {
+function showLogin() {
+  qs('#app').hidden = true;
+  document.body.classList.add('is-login');
+  document.title = `Đăng nhập · Chất lượng giảng dạy BL · ${ORG_NAME}`;
+  const root = qs('#login-root');
+  root.hidden = false;
+  renderLogin(root, {
+    onSuccess(acc) {
+      root.hidden = true;
+      root.innerHTML = '';
+      document.body.classList.remove('is-login');
+      startApp(acc);
+    },
+  });
+}
+
+async function startApp(acc) {
+  state.account = acc;
+  qs('#app').hidden = false;
   const main = qs('#main');
   setHTML(main, html`<div class="empty" style="min-height:50vh"><span class="spinner" aria-hidden="true"></span><div class="empty__title">Đang tính toán dữ liệu…</div></div>`);
   await new Promise((r) => setTimeout(r, 20));
   try {
     await loadDataset();
     recompute({ reason: 'boot' });
-    setUser(load('user', 'qlcl'), { silent: true });
+    resolveUser();
   } catch (e) {
     console.error(e);
     setHTML(main, html`${plainCard({ body: emptyState({ title: 'Không khởi động được ứng dụng', text: e.message }) })}`);
@@ -339,6 +419,13 @@ async function boot() {
     <button type="button" class="icon-btn assistant__close" aria-label="Đóng trợ lý">${icon('close')}</button></div><div class="assistant__body" aria-live="polite"></div>`);
   bindChrome();
   route();
+}
+
+async function boot() {
+  await Promise.all([initAuth(), probeLogo()]);
+  const acc = currentAccount();
+  if (acc) startApp(acc);
+  else showLogin();
 }
 
 if (!window.echarts) console.warn('Không tải được ECharts – biểu đồ sẽ không hiển thị.');

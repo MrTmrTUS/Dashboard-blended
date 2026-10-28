@@ -19,7 +19,7 @@ Mục đích của bản này là phục vụ **công việc 3.1 – thiết k�
 | **M5** Trợ lý AI (khung phải M1 – M3) | — | Tóm tắt 3 – 5 câu có mã nguồn [F1]…, rê chuột xem số liệu gốc · bộ kiểm số · gợi ý biện pháp chỉ từ thư viện đã duyệt (“Áp dụng vào kế hoạch”) · 👍/👎 |
 | **M0** Quản trị và kiểm chứng | Dữ liệu đúng chưa? Đạt TC1 – TC4 chưa? | Dữ liệu và công bố đợt · nhập tệp 5 bước (báo lỗi theo dòng) · cấu hình có lịch sử và “xem trước tác động” · danh mục · người dùng, nhật ký truy cập · thư viện biện pháp (duyệt) · **kiểm chứng TC1 – TC4** · mô-đun AI, thử bộ kiểm số |
 
-Ngoài ra: phân quyền theo vai trò và phạm vi (lọc ở tầng truy vấn), thông báo trong ứng dụng khi công bố đợt, phiếu SUS tích hợp (TC3), giao diện chấm AI cho 2 chuyên gia (TC4), xuất minh chứng PDCA (CSV), giao diện điện thoại, đạt kiểm tra tự động WCAG 2.1 AA (axe-core) trên mọi màn hình.
+Ngoài ra: **đăng nhập** (quản trị cấp tài khoản, khách chỉ xem), phân quyền theo vai trò và phạm vi (lọc ở tầng truy vấn), thông báo trong ứng dụng khi công bố đợt, phiếu SUS tích hợp (TC3), giao diện chấm AI cho 2 chuyên gia (TC4), xuất minh chứng PDCA (CSV), giao diện điện thoại, đạt kiểm tra tự động WCAG 2.1 AA (axe-core) trên mọi màn hình.
 
 ## Chạy thử trên máy
 
@@ -29,13 +29,13 @@ Cần Node.js ≥ 20 (không cần cài thêm gói nào).
 npm start
 ```
 
-Mở <http://localhost:8080>. Có thể dùng bất kỳ máy chủ tĩnh nào trỏ vào thư mục `web/` (ví dụ `python3 -m http.server -d web 8080`). Mở trực tiếp tệp `index.html` bằng `file://` sẽ không chạy vì trình duyệt chặn mô-đun JavaScript.
+Mở <http://localhost:8080> rồi đăng nhập (xem [Đăng nhập và tài khoản](#đăng-nhập-và-tài-khoản)). Có thể dùng bất kỳ máy chủ tĩnh nào trỏ vào thư mục `web/` (ví dụ `python3 -m http.server -d web 8080`). Mở trực tiếp tệp `index.html` bằng `file://` sẽ không chạy vì trình duyệt chặn mô-đun JavaScript.
 
 ```bash
 npm test
 ```
 
-Chạy 30 kiểm thử đơn vị của bộ tính toán (đáp số tính tay ở mục 4), nhập tệp, bộ kiểm số, xóa thông tin nhận diện và “kịch bản” của dữ liệu mô phỏng.
+Chạy 37 kiểm thử đơn vị: bộ tính toán (đáp số tính tay ở mục 4), nhập tệp, bộ kiểm số, xóa thông tin nhận diện, “kịch bản” của dữ liệu mô phỏng, và phần đăng nhập (băm mật khẩu đối chiếu `node:crypto`, quy tắc tài khoản, vai trò khách).
 
 ## Đưa lên GitHub Pages
 
@@ -54,13 +54,31 @@ Gặp **404**: đợi lượt triển khai trong tab Actions chạy xong rồi t
 
 Mọi đường dẫn đều tương đối và định tuyến bằng `#/…`, nên trang cũng chạy được trên máy chủ tĩnh của Trường mà không cần cấu hình thêm.
 
+## Logo Trường
+
+Đặt tệp logo chính thức của Trường Đại học Thành Đông tại `web/assets/logo-tdu.png` (PNG nền trong suốt, nên từ 256 × 256 px): logo tự hiện ở thanh trên cùng và màn hình đăng nhập, không cần sửa mã. Chưa có tệp thì trang dùng biểu trưng của ứng dụng (khối cột).
+
+## Đăng nhập và tài khoản
+
+Mở trang là gặp màn hình đăng nhập. Có sẵn 2 tài khoản (mật khẩu do nhóm nghiên cứu giữ, không ghi ở đây):
+
+| Tên đăng nhập | Vai trò | Được làm gì |
+|---|---|---|
+| `admin` | Quản trị hệ thống | Cấp tài khoản (M0 › Tài khoản, nhật ký), quản trị dữ liệu, cấu hình, kiểm chứng; xem thử dưới vai trò khác để trình diễn phân quyền |
+| `guess` | Khách (chỉ xem) | Xem chỉ số ở M1 Tổng quan, M2 Lớp học phần, M4 Đối sánh; không chỉnh sửa, không xem dữ liệu sinh viên, không vào M0 |
+
+- **Cấp tài khoản:** admin vào M0 › Tài khoản, nhật ký › *Tạo tài khoản* (chọn vai trò và phạm vi: khoa, giảng viên, cố vấn học tập…), đặt lại mật khẩu, khóa hoặc xóa. Thay đổi có hiệu lực ngay trên máy đó; để áp dụng cho mọi máy, bấm *Tải tệp accounts.json* rồi tải tệp lên GitHub, ghi đè [`web/data/accounts.json`](web/data/accounts.json).
+- Mật khẩu chỉ lưu dạng băm PBKDF2-SHA256 có muối. Nhập sai 5 lần thì tạm khóa 30 giây. Phiên đăng nhập kết thúc khi đóng thẻ (tối đa 12 giờ), hoặc sau 7 ngày nếu chọn “Ghi nhớ đăng nhập”; đặt lại mật khẩu, khóa hay xóa tài khoản làm phiên cũ hết hiệu lực. Đăng nhập, đăng xuất, thay đổi tài khoản đều được ghi nhật ký.
+- **Quên mật khẩu admin:** chạy `npm run account -- set-password admin` (nhập mật khẩu mới), rồi commit và push tệp `web/data/accounts.json`.
+- **Giới hạn:** đây là trang tĩnh nên bước đăng nhập kiểm tra ngay trên trình duyệt – đủ để phân quyền khi thử nghiệm, nhưng người rành kỹ thuật vẫn đọc được mã nguồn và các tệp công khai. Không đưa dữ liệu thật lên GitHub Pages; bản chính thức đặt đăng nhập trên máy chủ của Trường (Django, LDAP/OIDC).
+
 ## Thử nhanh theo vai trò
 
-Bản MVP không có đăng nhập. Bấm vào tên người dùng ở góc phải trên để chọn tài khoản mô phỏng:
+Đăng nhập `admin`, bấm vào tên ở góc phải trên › **Xem thử dưới vai trò** để thấy màn hình và dữ liệu đúng phạm vi của từng vai trò (nhật ký vẫn ghi theo tài khoản admin):
 
 | Vai trò | Thử gì |
 |---|---|
-| Phòng QLCL (mặc định) | M1 → bấm chấm đỏ “Cơ sở dữ liệu – N02” trên biểu đồ phễu → đọc lý do (PS1 < 2,5) → M0 › Kiểm chứng |
+| Phòng QLCL | M1 → bấm chấm đỏ “Cơ sở dữ liệu – N02” trên biểu đồ phễu → đọc lý do (PS1 < 2,5) → M0 › Kiểm chứng |
 | Lãnh đạo Khoa Kỹ thuật – CN | Bộ lọc khoa bị khóa; bản đồ nhiệt cho thấy IN1 (học liệu số, hạ tầng) yếu chung cả khoa |
 | Giảng viên ThS. Hoàng Hữu Bình | Lớp “Marketing căn bản – N03”: 🟡 THEO DÕI (IN1 < 3,5) → bấm “Áp dụng vào kế hoạch” từ gợi ý của trợ lý AI |
 | Cố vấn học tập | M3: sinh viên mình phụ trách, đánh dấu “đã liên hệ” |
@@ -112,26 +130,28 @@ Toàn bộ nằm trong [`web/js/core/`](web/js/core) – mô-đun JavaScript thu
 ```text
 web/                     # toàn bộ trang tĩnh – thư mục được triển khai
 ├─ index.html
-├─ assets/css/           # tokens.css (màu TDU, mục 9) · app.css
-├─ js/core/              # bộ tính toán thuần (mục 4)
+├─ assets/               # css/ (tokens.css màu TDU mục 9, app.css) · favicon.svg · logo-tdu.png (logo Trường, đặt vào)
+├─ data/accounts.json    # tài khoản đăng nhập (mật khẩu đã băm)
+├─ js/core/              # bộ tính toán thuần (mục 4), băm mật khẩu, quy tắc tài khoản
 ├─ js/data/              # danh mục, dữ liệu mô phỏng, thư viện biện pháp, tham số nghiên cứu, xuất/nhập CSV
 ├─ js/ai/                # dữ kiện có mã, sinh văn bản, phân loại ý kiến, gọi Ollama
 ├─ js/ui/                # thành phần giao diện, biểu đồ ECharts, biểu tượng
-├─ js/views/             # M0 – M5, phiếu SUS, giới thiệu
+├─ js/views/             # M0 – M5, đăng nhập, phiếu SUS, giới thiệu
 ├─ js/api.js             # tầng truy vấn theo vai trò (tương ứng đường dẫn mục 5.8)
-├─ js/access.js          # vai trò, phạm vi, tài khoản mô phỏng
+├─ js/auth.js            # đăng nhập, phiên, cấp tài khoản
+├─ js/access.js          # vai trò, phạm vi, người dùng mô phỏng để “xem thử”
 ├─ js/store.js           # lưu trữ cục bộ (localStorage, IndexedDB)
 ├─ templates/            # tệp CSV mẫu (Phụ lục A)
 └─ vendor/echarts/       # Apache ECharts 5.6.0 đóng gói kèm (không tải từ mạng)
 tests/                   # kiểm thử đơn vị (node --test), dữ liệu mẫu có đáp số tính tay
-scripts/                 # máy chủ chạy thử, sinh tệp mẫu
+scripts/                 # máy chủ chạy thử, sinh tệp mẫu, quản lý tài khoản (npm run account)
 docs/                    # ghi chú thiết kế, ảnh chụp màn hình
 ```
 
 ## Giới hạn của bản MVP
 
-- **Không thay được bảo mật phía máy chủ.** Ứng dụng tĩnh chạy hoàn toàn trên trình duyệt, nên phân quyền ở `api.js` chỉ mô phỏng logic “lọc ở tầng truy vấn”; dữ liệu thật phải đặt sau máy chủ có đăng nhập (bản Django), không công khai trên GitHub Pages.
-- Dữ liệu nhập và thao tác lưu trong trình duyệt của từng người (localStorage, IndexedDB), không đồng bộ giữa các máy.
+- **Không thay được bảo mật phía máy chủ.** Ứng dụng tĩnh chạy hoàn toàn trên trình duyệt – kể cả bước đăng nhập – nên phân quyền ở `api.js` chỉ mô phỏng logic “lọc ở tầng truy vấn”; dữ liệu thật phải đặt sau máy chủ có đăng nhập (bản Django), không công khai trên GitHub Pages.
+- Dữ liệu nhập và thao tác lưu trong trình duyệt của từng người (localStorage, IndexedDB), không đồng bộ giữa các máy; riêng danh sách tài khoản áp dụng cho mọi máy qua tệp `web/data/accounts.json`.
 - Bộ tính toán chạy trên trình duyệt khi mở trang (~0,9 giây trên máy tính thông thường; chậm hơn trên máy yếu). Bản chính thức tính sẵn theo lô trên máy chủ và giao diện chỉ đọc bảng tổng hợp.
 - Lời dẫn chỉ báo, tên khoa, học phần, giảng viên, tham số Nội dung 1, 2 đều là minh họa.
 

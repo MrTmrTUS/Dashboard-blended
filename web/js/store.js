@@ -89,7 +89,8 @@ export const state = {
   datasetKey: 'synthetic',
   mart: null,
   cfg: null,
-  user: null,
+  account: null, // tài khoản đăng nhập (không kèm mã băm)
+  user: null, // người dùng hiệu lực: chính tài khoản, hoặc vai trò quản trị đang "xem thử"
   users: [],
   version: 0,
 };
@@ -148,25 +149,26 @@ export const configStore = {
     const time = new Date().toISOString();
     for (const { key, from, to } of changes) {
       current[key] = to;
-      hist.unshift({ time, userId: user.id, userName: user.name, role: user.roleLabel, key, from, to, note });
+      hist.unshift({ time, userId: user.id, userName: user.name, role: user.roleLabel, account: state.account?.username, key, from, to, note });
     }
     save('config', current);
     save('config-history', hist.slice(0, 300));
   },
   reset(user, defaults) {
     const hist = configStore.history();
-    hist.unshift({ time: new Date().toISOString(), userId: user.id, userName: user.name, role: user.roleLabel, key: '*', from: 'tùy chỉnh', to: 'mặc định', note: 'Khôi phục mặc định' });
+    hist.unshift({ time: new Date().toISOString(), userId: user.id, userName: user.name, role: user.roleLabel, account: state.account?.username, key: '*', from: 'tùy chỉnh', to: 'mặc định', note: 'Khôi phục mặc định' });
     save('config', {});
     save('config-history', hist.slice(0, 300));
     return defaults;
   },
 };
 
-// ---- Nhật ký truy cập (mọi lượt xem dữ liệu cấp sinh viên đều được ghi) --------------
+// ---- Nhật ký truy cập: đăng nhập, đăng xuất và mọi lượt xem dữ liệu cấp sinh viên --------
+// Luôn ghi tài khoản đăng nhập thật, kể cả khi quản trị đang "xem thử" dưới vai trò khác.
 export const accessLog = {
   add(entry) {
     const list = load('access-log', []);
-    list.unshift({ time: new Date().toISOString(), ...entry });
+    list.unshift({ time: new Date().toISOString(), account: state.account?.username, ...entry });
     save('access-log', list.slice(0, 1000));
   },
   list() {

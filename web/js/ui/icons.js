@@ -31,6 +31,10 @@ const P = {
   arrowRight: '<path d="M5 12h14M13 6l6 6-6 6"/>',
   play: '<path d="M7 4v16l13-8z"/>',
   link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7L11.5 6.8"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1.5-1.5"/>',
+  logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  key: '<circle cx="7.5" cy="15.5" r="4"/><path d="M10.4 12.6L20 3M15.5 7.5l3 3M13 10l2 2"/>',
+  eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
 };
 
 export function icon(name, { size, label } = {}) {
@@ -42,7 +46,8 @@ export function icon(name, { size, label } = {}) {
   );
 }
 
-// Biểu trưng của ứng dụng: khối "BL" trên nền trắng, gợi bậc thang chất lượng.
-export const brandMark = raw(
-  '<svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="8" fill="#fff"/><rect x="7" y="17" width="4" height="8" rx="1.5" fill="#B5801C"/><rect x="14" y="12" width="4" height="13" rx="1.5" fill="#518ECF"/><rect x="21" y="7" width="4" height="18" rx="1.5" fill="#272C63"/></svg>',
-);
+// Biểu trưng của ứng dụng (không phải logo Trường): khối cột trên nền trắng, gợi bậc thang chất lượng.
+export const brandMark = (cls = 'brand__mark') =>
+  raw(
+    `<svg class="${cls}" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="8" fill="#fff"/><rect x="7" y="17" width="4" height="8" rx="1.5" fill="#B5801C"/><rect x="14" y="12" width="4" height="13" rx="1.5" fill="#518ECF"/><rect x="21" y="7" width="4" height="18" rx="1.5" fill="#272C63"/></svg>`,
+  );

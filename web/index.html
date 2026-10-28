@@ -16,7 +16,9 @@
   </head>
   <body>
     <a class="skip-link" href="#main">Bỏ qua đến nội dung chính</a>
-    <div id="app" class="app">
+    <!-- Màn hình đăng nhập (views/login.js); khung ứng dụng chỉ hiện sau khi đăng nhập -->
+    <div id="login-root" class="login-root" hidden></div>
+    <div id="app" class="app" hidden>
       <header class="topbar" id="topbar"></header>
       <div class="filterbar" id="filterbar" hidden></div>
       <div class="layout">

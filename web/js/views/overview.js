@@ -57,7 +57,7 @@ export const OverviewView = {
             kind: 'info',
             title: 'Chào mừng đến bản MVP',
             iconText: '👋',
-            body: html`Toàn bộ số liệu là <b>dữ liệu mô phỏng</b> có “kịch bản” để trình diễn. Chọn vai trò ở góc phải trên cùng để xem dashboard theo phạm vi của từng nhóm người dùng; mỗi biểu đồ có <b>Cách đọc</b> và <b>Xem dạng bảng</b>.`,
+            body: html`Toàn bộ số liệu là <b>dữ liệu mô phỏng</b> có “kịch bản” để trình diễn.${ctx.account?.role === 'admin' ? html` Bấm vào tên ở góc phải trên cùng › <b>Xem thử dưới vai trò</b> để xem dashboard theo phạm vi của từng nhóm người dùng.` : ''} Mỗi biểu đồ có <b>Cách đọc</b> và <b>Xem dạng bảng</b>.`,
             actions: html`<button type="button" class="btn btn--sm" data-dismiss-welcome>Đã hiểu</button>`,
           })
         : ''}

@@ -1,5 +1,6 @@
 // M5 – Trợ lý AI (khung bên phải M1 – M3).
 // Mọi văn bản AI có nhãn "Do AI tạo – đối chiếu số liệu nguồn", mã nguồn [F1]… và nút 👍/👎.
+import { isReadOnly } from '../access.js';
 import { generate } from '../ai/generator.js';
 import { FACTOR_BY_CODE } from '../core/constants.js';
 import { fmtScore } from '../core/format.js';
@@ -24,6 +25,7 @@ function withRefs(text, facts) {
 }
 
 function feedbackButtons(target, user) {
+  if (isReadOnly(user)) return '';
   const cur = feedback.get(target, user.id)?.value;
   return html`<div class="feedback" data-target="${target}">
     <button type="button" class="btn-tool" data-fb="up" aria-pressed="${cur === 'up'}">${icon('up')}Hữu ích</button>
@@ -103,11 +105,13 @@ export async function renderAssistant(host, request, ctx, { force = false } = {}
               <div>${m.measure.text}</div>
               ${m.note ? html`<div class="caption" style="margin-top:4px">${m.note}</div>` : ''}
               <div class="caption" style="margin-top:4px">Căn cứ: ${m.dim} ${fmtScore(m.mean)} ${m.ref ? html`<button type="button" class="fact-ref" data-fact="${m.ref}">${m.ref}</button>` : ''} · Đối tượng: ${m.measure.target}</div>
-              <div class="feedback" data-target="${target}:${m.measure.code}">
-                ${canPlan ? html`<button type="button" class="btn btn--sm" data-apply="${m.measure.code}" data-dim="${m.dim}">${icon('plus')}Áp dụng vào kế hoạch</button>` : ''}
-                <button type="button" class="btn-tool" data-fb="up" aria-pressed="${feedback.get(`${target}:${m.measure.code}`, user.id)?.value === 'up'}">${icon('up')}<span class="sr-only">Hữu ích</span></button>
-                <button type="button" class="btn-tool is-down" data-fb="down" aria-pressed="${feedback.get(`${target}:${m.measure.code}`, user.id)?.value === 'down'}">${icon('down')}<span class="sr-only">Chưa đúng</span></button>
-              </div>
+              ${isReadOnly(user)
+                ? ''
+                : html`<div class="feedback" data-target="${target}:${m.measure.code}">
+                    ${canPlan ? html`<button type="button" class="btn btn--sm" data-apply="${m.measure.code}" data-dim="${m.dim}">${icon('plus')}Áp dụng vào kế hoạch</button>` : ''}
+                    <button type="button" class="btn-tool" data-fb="up" aria-pressed="${feedback.get(`${target}:${m.measure.code}`, user.id)?.value === 'up'}">${icon('up')}<span class="sr-only">Hữu ích</span></button>
+                    <button type="button" class="btn-tool is-down" data-fb="down" aria-pressed="${feedback.get(`${target}:${m.measure.code}`, user.id)?.value === 'down'}">${icon('down')}<span class="sr-only">Chưa đúng</span></button>
+                  </div>`}
             </div>`,
           )}
           <p class="caption">Người dùng là người quyết định áp dụng; gợi ý chỉ lấy từ thư viện biện pháp đã được chuyên gia duyệt.</p>

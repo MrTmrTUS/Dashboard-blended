@@ -4,8 +4,9 @@ import { coursesFor, facultiesFor, FUNNEL_METRIC_OPTIONS, metricName, notificati
 import { DOT_LABELS } from '../core/constants.js';
 import { fmtDate, fmtDateTime } from '../core/format.js';
 import { notifRead, state } from '../store.js';
+import { logoMark, ORG_NAME } from '../ui/brand.js';
 import { esc, html, qs, raw } from '../ui/dom.js';
-import { brandMark, icon } from '../ui/icons.js';
+import { icon } from '../ui/icons.js';
 
 export function renderTopbar(ctx) {
   const { user } = ctx;
@@ -15,9 +16,9 @@ export function renderTopbar(ctx) {
   const read = notifRead.set();
   const unread = notif.filter((n) => !read.has(n.id)).length;
   return html`
-    <a class="brand" href="#/" aria-label="Trang chính – Dashboard chất lượng giảng dạy BL">
-      ${brandMark}
-      <span class="brand__text"><span class="brand__name">Chất lượng giảng dạy BL</span><span class="brand__sub">Trường Đại học Thành Đông · MVP</span></span>
+    <a class="brand" href="#/" aria-label="Trang chính – Dashboard chất lượng giảng dạy BL, ${ORG_NAME}">
+      ${logoMark('brand__mark')}
+      <span class="brand__text"><span class="brand__name">Chất lượng giảng dạy BL</span><span class="brand__sub">${ORG_NAME} · MVP</span></span>
     </a>
     <nav class="mainnav" aria-label="Màn hình chính">
       ${order.map((code) => {
@@ -27,12 +28,12 @@ export function renderTopbar(ctx) {
       })}
     </nav>
     <span class="topbar__spacer"></span>
-    <button type="button" class="icon-btn" id="btn-notif" aria-haspopup="true" aria-expanded="false" aria-label="Thông báo${unread ? `: ${unread} chưa đọc` : ''}">
+    <button type="button" class="icon-btn" id="btn-notif" aria-haspopup="dialog" aria-expanded="false" aria-label="Thông báo${unread ? `: ${unread} chưa đọc` : ''}">
       ${icon('bell')}${unread ? html`<span class="badge-count" aria-hidden="true">${unread > 9 ? '9+' : unread}</span>` : ''}
     </button>
-    <button type="button" class="user-btn" id="btn-role" aria-haspopup="true" aria-expanded="false" aria-label="Đổi vai trò trình diễn – hiện tại: ${user.name}, ${user.roleLabel}">
+    <button type="button" class="user-btn${user.viewAs ? ' is-viewas' : ''}" id="btn-user" aria-haspopup="dialog" aria-expanded="false" aria-label="Tài khoản ${state.account.name}${user.viewAs ? ` – đang xem thử: ${user.name}, ${user.roleLabel}` : `, ${user.roleLabel}`}. Mở menu tài khoản, đăng xuất">
       <span class="avatar" aria-hidden="true">${user.initials}</span>
-      <span class="user-btn__text"><span class="user-btn__name">${user.name}</span><span class="user-btn__role">${user.roleLabel}</span></span>
+      <span class="user-btn__text"><span class="user-btn__name">${user.name}</span><span class="user-btn__role">${user.viewAs ? `Xem thử · ${user.roleLabel}` : user.roleLabel}</span></span>
     </button>`;
 }
 
@@ -119,9 +120,12 @@ export function filterMeta(ctx, wave) {
     <span class="data-badge ${sim ? 'data-badge--sim' : 'data-badge--import'}" title="${sim ? 'Bộ dữ liệu mô phỏng có hạt giống cố định – không phải dữ liệu thật của Trường' : `Dữ liệu nhập từ tệp lúc ${fmtDateTime(ds.meta?.updatedAt)}`}">${sim ? 'Dữ liệu mô phỏng' : 'Dữ liệu nhập'}</span>`;
 }
 
-// ---- Bảng chọn vai trò và thông báo --------------------------------------------------------
+// ---- Menu tài khoản và thông báo ----------------------------------------------------------------
 
-export function roleMenu(ctx) {
+// Mọi tài khoản: thông tin đăng nhập + đăng xuất. Riêng quản trị: "xem thử dưới vai trò" để trình diễn phân quyền.
+export function userMenu(ctx) {
+  const acc = state.account;
+  const isAdmin = acc.role === 'admin';
   const groups = [
     ['qlcl', 'bgh', 'admin'],
     ['khoa'],
@@ -129,21 +133,37 @@ export function roleMenu(ctx) {
     ['cvht'],
   ];
   const titles = ['Cấp Trường', 'Lãnh đạo khoa', 'Giảng viên', 'Cố vấn học tập'];
-  return html`<div class="popover__head"><span>Chọn vai trò trình diễn</span><button type="button" class="icon-btn" data-close-pop aria-label="Đóng">${icon('close', { size: 18 })}</button></div>
-    <p class="caption" style="padding:8px 14px 0;margin:0">Bản MVP không có đăng nhập; chọn một tài khoản mô phỏng để thấy dữ liệu theo đúng phạm vi của vai trò đó.</p>
-    ${groups.map(
-      (roles, gi) => html`<div class="role-group" role="group" aria-label="${titles[gi]}">
-        <div class="role-group__title">${titles[gi]}</div>
-        ${state.users
-          .filter((u) => roles.includes(u.role))
-          .map(
-            (u) => html`<button type="button" class="role-item" role="menuitemradio" aria-checked="${u.id === ctx.user.id}" data-user="${u.id}">
-              <span class="avatar" aria-hidden="true">${u.initials}</span>
-              <span><span class="role-item__name">${u.name}</span><br><span class="role-item__scope">${u.role === 'gv' || u.role === 'cvht' || u.role === 'khoa' ? u.unit : `${u.unit} · ${ROLES[u.role].scope}`}</span></span>
-            </button>`,
+  return html`<div class="popover__head"><span>Tài khoản</span><button type="button" class="icon-btn" data-close-pop aria-label="Đóng">${icon('close', { size: 18 })}</button></div>
+    <div class="account-card">
+      <span class="avatar avatar--lg" aria-hidden="true">${isAdmin ? 'QT' : ctx.user.initials}</span>
+      <span><span class="account-card__name">${acc.name}</span><br><span class="account-card__meta">${acc.username} · ${ROLES[acc.role].label}</span></span>
+    </div>
+    ${isAdmin
+      ? html`<div class="role-menu">
+          <div class="role-group__title role-group__title--lead">Xem thử dưới vai trò</div>
+          <p class="caption role-menu__note">Chỉ tài khoản quản trị dùng được, để trình diễn phân quyền theo vai trò và phạm vi. Nhật ký vẫn ghi theo tài khoản ${acc.username}.</p>
+          <div class="role-group" role="group" aria-label="Tài khoản của tôi">
+            <button type="button" class="role-item"${raw(ctx.user.viewAs ? '' : ' aria-current="true"')} data-view-self>
+              <span class="avatar" aria-hidden="true">QT</span>
+              <span><span class="role-item__name">${acc.name} (tài khoản của tôi)</span><br><span class="role-item__scope">${ROLES.admin.label} · ${ROLES.admin.scope}</span></span>
+            </button>
+          </div>
+          ${groups.map(
+            (roles, gi) => html`<div class="role-group" role="group" aria-label="${titles[gi]}">
+              <div class="role-group__title">${titles[gi]}</div>
+              ${state.users
+                .filter((u) => roles.includes(u.role) && u.id !== 'admin')
+                .map(
+                  (u) => html`<button type="button" class="role-item"${raw(u.id === ctx.user.id ? ' aria-current="true"' : '')} data-user="${u.id}">
+                    <span class="avatar" aria-hidden="true">${u.initials}</span>
+                    <span><span class="role-item__name">${u.name}</span><br><span class="role-item__scope">${u.role === 'gv' || u.role === 'cvht' || u.role === 'khoa' ? u.unit : `${u.unit} · ${ROLES[u.role].scope}`}</span></span>
+                  </button>`,
+                )}
+            </div>`,
           )}
-      </div>`,
-    )}`;
+        </div>`
+      : ''}
+    <div class="popover__foot"><button type="button" class="btn btn--sm" data-logout>${icon('logout')}Đăng xuất</button></div>`;
 }
 
 export function notifMenu(ctx) {
@@ -194,7 +214,7 @@ export function openPopover(anchor, content, onMount) {
     if (e.target.closest('[data-close-pop]')) closePopover();
   });
   onMount?.(pop);
-  pop.querySelector('[aria-checked="true"], a, button')?.focus();
+  pop.querySelector('[aria-current="true"], a, button')?.focus();
   return pop;
 }
 
