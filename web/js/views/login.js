@@ -1,6 +1,6 @@
 // Màn hình đăng nhập: hiện trước mọi màn hình khác; đăng nhập xong mới nạp và tính dữ liệu.
 import { accountsStatus, login, takeNotice } from '../auth.js';
-import { logoMark, ORG_NAME } from '../ui/brand.js';
+import { hasLogo, logoMark, ORG_NAME } from '../ui/brand.js';
 import { html } from '../ui/dom.js';
 import { icon } from '../ui/icons.js';
 
@@ -9,7 +9,7 @@ export function renderLogin(root, { onSuccess }) {
   const { error } = accountsStatus();
   root.innerHTML = String(html`<main class="login" id="login-main">
     <section class="login__brand" aria-labelledby="login-title">
-      <div class="login__logo">${logoMark('login__mark', `Logo ${ORG_NAME}`)}</div>
+      <div class="login__logo${hasLogo() ? ' login__logo--seal' : ''}">${logoMark('login__mark', `Logo ${ORG_NAME}`)}</div>
       <p class="login__org">${ORG_NAME}</p>
       <h1 class="login__title" id="login-title">Dashboard chất lượng giảng dạy <span>Blended Learning</span></h1>
       <p class="login__lead">Theo dõi chất lượng giảng dạy theo 7 phương diện, phát hiện sớm lớp học phần cần hỗ trợ và đo hiệu quả cải tiến qua từng đợt đánh giá.</p>

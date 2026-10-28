@@ -56,7 +56,7 @@ Mọi đường dẫn đều tương đối và định tuyến bằng `#/…`, 
 
 ## Logo Trường
 
-Đặt tệp logo chính thức của Trường Đại học Thành Đông tại `web/assets/logo-tdu.png` (PNG nền trong suốt, nên từ 256 × 256 px): logo tự hiện ở thanh trên cùng và màn hình đăng nhập, không cần sửa mã. Chưa có tệp thì trang dùng biểu trưng của ứng dụng (khối cột).
+Logo chính thức của Trường Đại học Thành Đông nằm ở `web/assets/logo-tdu.png` (256 × 256 px, ngoài vòng tròn trong suốt), hiện ở thanh trên cùng, màn hình đăng nhập và biểu tượng trên thẻ trình duyệt. Muốn thay logo chỉ cần ghi đè tệp này (PNG vuông, nền trong suốt), không cần sửa mã; thiếu tệp thì trang tạm dùng biểu trưng của ứng dụng (khối cột).
 
 ## Đăng nhập và tài khoản
 
@@ -130,7 +130,7 @@ Toàn bộ nằm trong [`web/js/core/`](web/js/core) – mô-đun JavaScript thu
 ```text
 web/                     # toàn bộ trang tĩnh – thư mục được triển khai
 ├─ index.html
-├─ assets/               # css/ (tokens.css màu TDU mục 9, app.css) · favicon.svg · logo-tdu.png (logo Trường, đặt vào)
+├─ assets/               # css/ (tokens.css màu TDU mục 9, app.css) · logo-tdu.png (logo Trường, cũng là biểu tượng thẻ)
 ├─ data/accounts.json    # tài khoản đăng nhập (mật khẩu đã băm)
 ├─ js/core/              # bộ tính toán thuần (mục 4), băm mật khẩu, quy tắc tài khoản
 ├─ js/data/              # danh mục, dữ liệu mô phỏng, thư viện biện pháp, tham số nghiên cứu, xuất/nhập CSV

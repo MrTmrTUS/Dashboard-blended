@@ -129,12 +129,12 @@ textarea {
   height: 32px;
 }
 
-/* Logo Trường (assets/logo-tdu.png) đặt trên nền trắng để rõ trên thanh màu chàm */
+/* Logo Trường (assets/logo-tdu.png – con dấu tròn) đặt trên nền tròn trắng để tách khỏi thanh màu chàm */
 .brand__mark--logo {
-  width: 36px;
-  height: 36px;
-  padding: 3px;
-  border-radius: 8px;
+  width: 38px;
+  height: 38px;
+  padding: 2px;
+  border-radius: 50%;
   background: #fff;
   object-fit: contain;
 }
@@ -2445,9 +2445,15 @@ body.is-login {
   height: 64px;
 }
 
+.login__logo--seal {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+}
+
 .login__mark--logo {
-  width: 82px;
-  height: 82px;
+  width: 102px;
+  height: 102px;
   object-fit: contain;
 }
 
@@ -2646,9 +2652,15 @@ body.is-login {
     height: 48px;
   }
 
+  .login__logo--seal {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+  }
+
   .login__mark--logo {
-    width: 62px;
-    height: 62px;
+    width: 76px;
+    height: 76px;
   }
 
   .login__org::after {
