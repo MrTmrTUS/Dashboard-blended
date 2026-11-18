@@ -20,6 +20,8 @@ const TOUR = [
   { role: 'gv:GV01', text: 'Giảng viên lớp “Marketing căn bản – N03”: xem hồ sơ 7 phương diện, áp dụng gợi ý của trợ lý AI vào kế hoạch cải tiến.', href: '#/lop/HK1-2627-MKT101-N03' },
   { role: 'cvht:CV01', text: 'Cố vấn học tập: danh sách sinh viên cần hỗ trợ (chế độ mô phỏng), đánh dấu “đã liên hệ”.', href: '#/sinh-vien' },
   { role: 'admin', text: 'Nhóm nghiên cứu: nhập tệp CSV mẫu có lỗi để thấy báo lỗi theo dòng; chạy Monte Carlo (TC2).', href: '#/quan-tri/nhap' },
+  { role: 'gv:GV04', text: 'Giảng viên Nguyên lý kế toán (M6 – kết quả CLO): HK1 2025–2026 lớp N02 – CLO3 thấp → tiêu chí định khoản, Pareto dạng lỗi → cải tiến; HK1 2026–2027 – nhóm phụ đạo, kiểm tra lại bằng đề tương đương.', href: '#/clo/phan-tich?ky=HK1-2526&lop=HK1-2526-ACP0371-N02&clo=CLO3&xem=chan-doan' },
+  { role: 'khoa:KT', text: 'Lãnh đạo Khoa Kinh tế (M6): kiểm tra ma trận của đề cương Nguyên lý kế toán, xem trước tác động và phê duyệt bộ quy tắc 2026.', href: '#/clo/cau-hinh?hp=ACP0371&pb=ACP0371@2026' },
 ];
 
 export const AboutView = {
@@ -38,6 +40,7 @@ export const AboutView = {
               <li>Bộ tính toán theo mục 4 (điểm phiếu, phễu, Pareto có trọng số, cảnh báo, logistic) có kiểm thử đơn vị với đáp số tính tay.</li>
               <li>Dữ liệu <b>mô phỏng</b> có kịch bản; nhập dữ liệu thật qua M0 › Nhập dữ liệu theo mẫu Phụ lục A.</li>
               <li>Trợ lý AI mặc định sinh văn bản bằng mẫu câu từ dữ kiện; có thể nối Ollama nội bộ ở M0 › Mô-đun AI.</li>
+              <li><b>M6 – Kết quả học tập theo CLO</b>: CLO, ma trận đánh giá theo đề cương chi tiết học phần Nguyên lý kế toán; điểm mô phỏng của cùng sinh viên, cùng lớp với khảo sát BL; kế hoạch cải tiến dùng chung.</li>
               <li>Bản chính thức theo kiến trúc mục 5: Django + PostgreSQL + HTMX + ECharts + Ollama, đóng gói Docker Compose.</li>
             </ul>`,
         })}

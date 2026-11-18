@@ -14,6 +14,7 @@ import { itemMeans, level, LEVEL_TO_STATUS } from './core/scoring.js';
 import { isNum, mean } from './core/stats.js';
 import { TOPIC_BY_ID } from './data/topics.js';
 import { accessLog, contacted, plans as planStore, state } from './store.js';
+import { cloNotifications, evaluatePlan, semesterLabel } from './api-clo.js';
 
 export const FUNNEL_METRIC_OPTIONS = ['IDX', ...DIMENSIONS, ...OUTCOMES];
 
@@ -438,6 +439,11 @@ export function lineagePlans(lineage) {
     .all()
     .filter((p) => lk.cls.get(p.classId)?.lineage === lineage)
     .map((p) => {
+      // Kế hoạch từ kết quả CLO (M6): đánh giá lại bằng tỷ lệ đạt CLO, độ lệch chấm… thay cho điểm khảo sát.
+      if (p.domain === 'clo') {
+        const ev = evaluatePlan(p);
+        return { ...p, before: ev.before ?? null, after: ev.after ?? null, delta: null, verdict: ev.verdict, eval: ev, wave: null, semesterLabel: semesterLabel(p.semesterId) };
+      }
       const t = mart.waveIndex.get(p.waveId);
       const before = series[t];
       let after = null;
@@ -461,7 +467,17 @@ export function lineagePlans(lineage) {
         wave: lk.wave.get(p.waveId),
       };
     })
-    .sort((x, y) => (mart.waveIndex.get(y.waveId) ?? 0) - (mart.waveIndex.get(x.waveId) ?? 0));
+    .sort((x, y) => planOrder(y) - planOrder(x));
+}
+
+// Thứ tự thời gian chung cho kế hoạch theo đợt khảo sát (BL) và theo học kỳ (CLO).
+function planOrder(p) {
+  const mart = state.mart;
+  if (p.domain === 'clo') {
+    const waves = mart.waves.filter((w) => w.semesterId === p.semesterId);
+    return waves.length ? mart.waveIndex.get(waves[waves.length - 1].id) + 0.5 : 0;
+  }
+  return mart.waveIndex.get(p.waveId) ?? 0;
 }
 
 // ---- M3 – Sinh viên (chế độ mô phỏng) -------------------------------------------------
@@ -582,7 +598,9 @@ export function notifications(user) {
     const red = rows.filter((s) => s.status === 'alert').length;
     if (red) items.push({ id: `stu:${wave.id}:${user.id}`, level: 'alert', text: `${red} sinh viên trong phạm vi phụ trách ở mức 🔴 Can thiệp (mô phỏng)`, href: '#/sinh-vien', meta: label });
   }
-  if (user.role === 'cvht') return items;
+  // Kết quả học tập theo CLO (M6): CLO dưới mục tiêu, nhiệm vụ hỗ trợ chưa xong, bộ quy tắc chờ phê duyệt.
+  const clo = cloNotifications(user);
+  if (user.role === 'cvht') return [...items, ...clo];
   const classes = ds.classes.filter((c) => c.semesterId === wave.semesterId && classInScope(user, c));
   for (const c of classes) {
     const cw = mart.classWave.get(`${c.id}|${wave.id}`);
@@ -601,6 +619,7 @@ export function notifications(user) {
       meta: `${lk.faculty.get(c.facultyId)?.short ?? ''} · ${label}`,
     });
   }
+  items.push(...clo);
   const rank = { alert: 2, warn: 1 };
   items.sort((a, b) => rank[b.level] - rank[a.level]);
   return items.slice(0, 30);

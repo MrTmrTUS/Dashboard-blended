@@ -6,19 +6,20 @@
 export const SCREENS = {
   M1: { code: 'M1', route: 'tong-quan', label: 'Tổng quan', icon: 'overview' },
   M2: { code: 'M2', route: 'lop', label: 'Lớp học phần', icon: 'class' },
+  M6: { code: 'M6', route: 'clo', label: 'Kết quả CLO', icon: 'target' },
   M3: { code: 'M3', route: 'sinh-vien', label: 'Sinh viên', icon: 'students' },
   M4: { code: 'M4', route: 'doi-sanh', label: 'Đối sánh', icon: 'compare' },
   M0: { code: 'M0', route: 'quan-tri', label: 'Quản trị', icon: 'admin' },
 };
 
 export const ROLES = {
-  bgh: { label: 'Ban Giám hiệu', screens: ['M1'], scope: 'Tổng hợp toàn Trường', home: 'M1', question: 'Chất lượng giảng dạy BL toàn Trường thế nào, có cải thiện không?' },
-  qlcl: { label: 'Phòng Quản lý chất lượng', screens: ['M1', 'M2', 'M4', 'M0'], scope: 'Toàn Trường đến lớp; không xem sinh viên', home: 'M1', question: 'Khoa, lớp nào cần can thiệp? Cải tiến có hiệu quả không?' },
-  khoa: { label: 'Lãnh đạo khoa', screens: ['M1', 'M2'], scope: 'Khoa mình', home: 'M1', question: 'Lớp nào trong khoa cần hỗ trợ, ưu tiên phương diện nào?' },
-  gv: { label: 'Giảng viên', screens: ['M2', 'M3'], scope: 'Lớp mình phụ trách', home: 'M2', question: 'Lớp tôi mạnh, yếu ở đâu? Sinh viên nào cần nhắc?' },
-  cvht: { label: 'Cố vấn học tập', screens: ['M3'], scope: 'Sinh viên mình phụ trách', home: 'M3', question: 'Sinh viên nào tôi phụ trách cần hỗ trợ?' },
-  admin: { label: 'Nhóm nghiên cứu, quản trị', screens: ['M0', 'M1', 'M2', 'M4'], scope: 'Toàn bộ dữ liệu đã mã hóa; cấp tài khoản', home: 'M0', question: 'Dữ liệu đã đúng chưa? Ngưỡng có phù hợp? Đạt TC1 – TC4 chưa?' },
-  viewer: { label: 'Khách (chỉ xem)', screens: ['M1', 'M2', 'M4'], scope: 'Xem chỉ số toàn Trường; không chỉnh sửa, không xem dữ liệu sinh viên', home: 'M1', question: 'Chất lượng giảng dạy BL của Trường đang thế nào?' },
+  bgh: { label: 'Ban Giám hiệu', screens: ['M1', 'M6'], scope: 'Tổng hợp toàn Trường', home: 'M1', question: 'Chất lượng giảng dạy BL toàn Trường thế nào, có cải thiện không?' },
+  qlcl: { label: 'Phòng Quản lý chất lượng', screens: ['M1', 'M2', 'M6', 'M4', 'M0'], scope: 'Toàn Trường đến lớp; không xem sinh viên', home: 'M1', question: 'Khoa, lớp nào cần can thiệp? Cải tiến có hiệu quả không?' },
+  khoa: { label: 'Lãnh đạo khoa', screens: ['M1', 'M2', 'M6'], scope: 'Khoa mình', home: 'M1', question: 'Lớp nào trong khoa cần hỗ trợ, ưu tiên phương diện nào?' },
+  gv: { label: 'Giảng viên', screens: ['M2', 'M6', 'M3'], scope: 'Lớp mình phụ trách', home: 'M2', question: 'Lớp tôi mạnh, yếu ở đâu? Sinh viên nào cần nhắc, chưa đạt CLO nào?' },
+  cvht: { label: 'Cố vấn học tập', screens: ['M6', 'M3'], scope: 'Sinh viên mình phụ trách', home: 'M3', question: 'Sinh viên nào tôi phụ trách cần hỗ trợ?' },
+  admin: { label: 'Nhóm nghiên cứu, quản trị', screens: ['M0', 'M1', 'M2', 'M6', 'M4'], scope: 'Toàn bộ dữ liệu đã mã hóa; cấp tài khoản', home: 'M0', question: 'Dữ liệu đã đúng chưa? Ngưỡng có phù hợp? Đạt TC1 – TC4 chưa?' },
+  viewer: { label: 'Khách (chỉ xem)', screens: ['M1', 'M2', 'M6', 'M4'], scope: 'Xem chỉ số toàn Trường; không chỉnh sửa, không xem dữ liệu sinh viên', home: 'M1', question: 'Chất lượng giảng dạy BL của Trường đang thế nào?' },
 };
 
 export class AccessDenied extends Error {
@@ -137,4 +138,49 @@ export function lockedFilters(user) {
 export function canSeeWave(user, wave) {
   if (wave.status === 'published') return true;
   return user.role === 'qlcl' || user.role === 'admin';
+}
+
+// ---- Đánh giá theo CLO (M6) ------------------------------------------------------------------
+// Dữ liệu cấp sinh viên (bản đồ nhiệt sinh viên × CLO, danh sách cần hỗ trợ, truy vết điểm): chỉ giảng viên
+// phụ trách lớp; cố vấn học tập xem danh sách cần hỗ trợ của sinh viên mình phụ trách. Các vai trò khác xem tổng hợp lớp.
+export function cloStudentLevel(user, cls) {
+  return Boolean(user && cls && user.role === 'gv' && cls.lecturerId === user.lecturerId);
+}
+
+// Lớp có dữ liệu CLO mà người dùng được xem ở mức lớp.
+export function cloClassInScope(user, cls, advisorClassIds = null) {
+  if (!user || !cls) return false;
+  if (user.role === 'cvht') return Boolean(advisorClassIds?.has(cls.id));
+  return classInScope(user, cls);
+}
+
+// Tạo, sửa bản nháp bộ quy tắc CLO: giảng viên dạy học phần, lãnh đạo khoa, Phòng QLCL, quản trị.
+export function cloCanDraft(user, course, teachesCourse = false) {
+  if (!user || !course || isReadOnly(user)) return false;
+  if (user.role === 'qlcl' || user.role === 'admin') return true;
+  if (user.role === 'khoa') return course.facultyId === user.facultyId;
+  if (user.role === 'gv') return teachesCourse;
+  return false;
+}
+
+// Phê duyệt bộ quy tắc: lãnh đạo khoa phụ trách học phần, Phòng QLCL, quản trị.
+export function cloCanApprove(user, course) {
+  if (!user || !course) return false;
+  if (user.role === 'qlcl' || user.role === 'admin') return true;
+  return user.role === 'khoa' && course.facultyId === user.facultyId;
+}
+
+// Nhập điểm chi tiết: giảng viên của lớp, Phòng QLCL, quản trị.
+export function cloCanImport(user, cls) {
+  if (!user || isReadOnly(user)) return false;
+  if (user.role === 'qlcl' || user.role === 'admin') return true;
+  return user.role === 'gv' && (!cls || cls.lecturerId === user.lecturerId);
+}
+
+// Kế hoạch cải tiến CLO: giảng viên (lớp mình), lãnh đạo khoa (khoa mình), Phòng QLCL, quản trị.
+export function cloCanPlan(user, cls) {
+  if (!user || !cls || isReadOnly(user)) return false;
+  if (user.role === 'qlcl' || user.role === 'admin') return true;
+  if (user.role === 'khoa' || user.role === 'gv') return classInScope(user, cls);
+  return false;
 }

@@ -39,6 +39,15 @@ export const DEFAULT_CONFIG = Object.freeze({
   ollamaModel: 'qwen2.5:7b-instruct',
   aiMaxRetries: 2,
   expertReview: false,
+  // Đánh giá theo CLO (M6) – tham số phân tích; ngưỡng đạt, mục tiêu lớp nằm trong bộ quy tắc của từng học phần
+  cloNearBand: 0.5,
+  cloWeightTol: 0.05,
+  cloItemEasy: 0.9,
+  cloItemHard: 0.3,
+  cloItemDisc: 0.2,
+  cloRaterTol: 0.5,
+  cloGapFlag: 3,
+  cloControlMin: 8,
 });
 
 // Mô tả các tham số để dựng màn hình Cấu hình (M0) và ghi lịch sử thay đổi.
@@ -60,6 +69,14 @@ export const CONFIG_FIELDS = [
   { key: 'stuProcYellow', group: 'Ngưỡng cấp sinh viên', label: 'Điểm quá trình dưới (🟡)', type: 'number', step: 0.5, min: 0, max: 10, ref: '4.5' },
   { key: 'stuProcRed', group: 'Ngưỡng cấp sinh viên', label: 'Điểm quá trình dưới (🔴)', type: 'number', step: 0.5, min: 0, max: 10, ref: '4.5' },
   { key: 'lowOutcome', group: 'Ngưỡng cấp sinh viên', label: 'Kết quả thấp: điểm học phần dưới', type: 'number', step: 0.5, min: 0, max: 10, ref: '4.5' },
+  { key: 'cloNearBand', group: 'Đánh giá theo CLO (M6)', label: 'Vùng "sát ngưỡng" quanh ngưỡng đạt CLO (± điểm)', type: 'number', step: 0.1, min: 0, max: 2, ref: 'M6', note: 'Ngưỡng đạt và mục tiêu lớp đặt trong bộ quy tắc đã phê duyệt của từng học phần' },
+  { key: 'cloWeightTol', group: 'Đánh giá theo CLO (M6)', label: 'Lệch trọng số CLO cho phép (tỷ lệ, 0,05 = 5 điểm %)', type: 'number', step: 0.01, min: 0.01, max: 0.2, ref: 'M6' },
+  { key: 'cloItemEasy', group: 'Đánh giá theo CLO (M6)', label: 'Câu quá dễ khi độ khó p trên', type: 'number', step: 0.05, min: 0.5, max: 1, ref: 'M6' },
+  { key: 'cloItemHard', group: 'Đánh giá theo CLO (M6)', label: 'Câu quá khó khi độ khó p dưới', type: 'number', step: 0.05, min: 0, max: 0.5, ref: 'M6' },
+  { key: 'cloItemDisc', group: 'Đánh giá theo CLO (M6)', label: 'Độ phân biệt D tối thiểu', type: 'number', step: 0.05, min: 0, max: 0.6, ref: 'M6' },
+  { key: 'cloRaterTol', group: 'Đánh giá theo CLO (M6)', label: 'Dung sai giữa hai cán bộ chấm (điểm/câu)', type: 'number', step: 0.25, min: 0.25, max: 2, ref: 'M6', note: 'Bài lệch quá dung sai cần chấm thống nhất' },
+  { key: 'cloGapFlag', group: 'Đánh giá theo CLO (M6)', label: 'Chênh điểm quá trình – điểm thi cần xem lại (điểm)', type: 'number', step: 0.5, min: 1, max: 6, ref: 'M6' },
+  { key: 'cloControlMin', group: 'Đánh giá theo CLO (M6)', label: 'Số đợt tương đương tối thiểu để bật biểu đồ kiểm soát', type: 'number', step: 1, min: 4, max: 30, ref: 'M6', note: 'Giai đoạn đầu dùng biểu đồ diễn biến (run chart)' },
 ];
 
 export function mergeConfig(base, patch) {

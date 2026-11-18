@@ -14,7 +14,7 @@ export const FACULTIES = [
 export const COURSES = [
   { id: 'MKT101', name: 'Marketing căn bản', facultyId: 'KT', sections: 3 },
   { id: 'KTE102', name: 'Kinh tế vi mô', facultyId: 'KT', sections: 2 },
-  { id: 'KTO201', name: 'Nguyên lý kế toán', facultyId: 'KT', sections: 2 },
+  { id: 'ACP0371', name: 'Nguyên lý kế toán', facultyId: 'KT', sections: 2 }, // mã theo đề cương chi tiết (đánh giá theo CLO – M6)
   { id: 'INF201', name: 'Lập trình cơ bản', facultyId: 'CNTT', sections: 2 },
   { id: 'INF202', name: 'Cơ sở dữ liệu', facultyId: 'CNTT', sections: 2 },
   { id: 'INF301', name: 'Mạng máy tính', facultyId: 'CNTT', sections: 1 },

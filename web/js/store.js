@@ -108,11 +108,16 @@ export function emit(name, payload) {
 const ns = (key) => `${state.datasetKey}:${key}`;
 
 // ---- Kế hoạch cải tiến (PDCA) --------------------------------------------------------
+// Kế hoạch dùng chung cho cả khảo sát BL (theo phương diện) và kết quả CLO (domain: 'clo').
+// Kế hoạch mẫu của bộ dữ liệu được bổ sung vào danh sách đã lưu nếu người dùng chưa xóa (khi nâng cấp phiên bản).
 export const plans = {
   all() {
     const stored = load(ns('plans'), null);
-    if (stored) return stored;
-    return (state.dataset?.seedPlans || []).map((p) => ({ ...p }));
+    const seeds = (state.dataset?.seedPlans || []).map((p) => ({ ...p }));
+    if (!stored) return seeds;
+    const have = new Set(stored.map((p) => p.id));
+    const deleted = new Set(load(ns('plans-deleted'), []));
+    return [...stored, ...seeds.filter((p) => !have.has(p.id) && !deleted.has(p.id))];
   },
   saveAll(list) {
     save(ns('plans'), list);
@@ -127,6 +132,65 @@ export const plans = {
   },
   remove(id) {
     plans.saveAll(plans.all().filter((p) => p.id !== id));
+    save(ns('plans-deleted'), [...new Set([...load(ns('plans-deleted'), []), id])]);
+  },
+};
+
+// ---- Đánh giá theo CLO (M6) ------------------------------------------------------------
+// cloRev tăng sau mỗi thay đổi để tầng truy vấn CLO tính lại (không cần tính lại toàn bộ khảo sát BL).
+let cloRevision = 0;
+export const cloRev = () => cloRevision;
+
+// Bộ quy tắc: bản sửa (patch) cho phiên bản có sẵn, bản nháp người dùng tạo, lịch sử thay đổi – phê duyệt.
+export const cloVersions = {
+  overlay() {
+    return load(ns('clo-versions'), { patch: {}, added: [], history: [] });
+  },
+  write(o) {
+    save(ns('clo-versions'), o);
+    cloRevision++;
+  },
+  log(o, user, versionId, action, detail = '') {
+    o.history.unshift({ time: new Date().toISOString(), userName: user.name, role: user.roleLabel, account: state.account?.username, versionId, action, detail });
+    o.history = o.history.slice(0, 300);
+  },
+};
+
+// Nhiệm vụ hỗ trợ sinh viên: bản ghi mẫu của bộ dữ liệu + bản ghi người dùng thêm, sửa.
+export const cloSupport = {
+  all() {
+    const stored = load(ns('clo-support'), null);
+    const seeds = (state.dataset?.outcomes?.support || []).map((x) => ({ ...x }));
+    if (!stored) return seeds;
+    const have = new Set(stored.map((x) => x.id));
+    const deleted = new Set(load(ns('clo-support-deleted'), []));
+    return [...stored, ...seeds.filter((x) => !have.has(x.id) && !deleted.has(x.id))];
+  },
+  upsert(list) {
+    const all = cloSupport.all();
+    const map = new Map(all.map((x) => [x.id, x]));
+    const now = new Date().toISOString();
+    for (const rec of list) map.set(rec.id, { ...(map.get(rec.id) || { createdAt: now }), ...rec, updatedAt: now });
+    save(ns('clo-support'), [...map.values()]);
+    cloRevision++;
+  },
+  remove(id) {
+    save(ns('clo-support'), cloSupport.all().filter((x) => x.id !== id));
+    save(ns('clo-support-deleted'), [...new Set([...load(ns('clo-support-deleted'), []), id])]);
+    cloRevision++;
+  },
+};
+
+// Nhận định của giảng viên trong báo cáo học phần.
+export const cloNotes = {
+  get(key) {
+    return load(ns('clo-notes'), {})[key] || null;
+  },
+  set(key, text, user) {
+    const m = load(ns('clo-notes'), {});
+    if (text) m[key] = { text, by: user.name, time: new Date().toISOString() };
+    else delete m[key];
+    save(ns('clo-notes'), m);
   },
 };
 

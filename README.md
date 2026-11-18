@@ -18,6 +18,7 @@ Mục đích của bản này là phục vụ **công việc 3.1 – thiết k�
 | **M4** Đối sánh liên trường | So với trường đối sánh ra sao? | Forest plot chênh lệch trung bình tiềm ẩn (KTC 95%), chỉ trên nhân tố đạt bất biến; nhân tố không đạt tô xám kèm lý do |
 | **M5** Trợ lý AI (khung phải M1 – M3) | — | Tóm tắt 3 – 5 câu có mã nguồn [F1]…, rê chuột xem số liệu gốc · bộ kiểm số · gợi ý biện pháp chỉ từ thư viện đã duyệt (“Áp dụng vào kế hoạch”) · 👍/👎 |
 | **M0** Quản trị và kiểm chứng | Dữ liệu đúng chưa? Đạt TC1 – TC4 chưa? | Dữ liệu và công bố đợt · nhập tệp 5 bước (báo lỗi theo dòng) · cấu hình có lịch sử và “xem trước tác động” · danh mục · người dùng, nhật ký truy cập · thư viện biện pháp (duyệt) · **kiểm chứng TC1 – TC4** · mô-đun AI, thử bộ kiểm số |
+| **M6** Kết quả học tập theo CLO | Lớp đạt chuẩn đầu ra đến đâu, yếu ở đâu, ai cần hỗ trợ? | Cấu hình ma trận (CLO, PLO/PI, phê duyệt, kiểm tra câu hỏi × CLO) · nhập và kiểm tra điểm Excel/LMS · tổng quan lớp (phễu minh chứng, histogram, box plot, quá trình × thi) · phân tích CLO (cột + radar, sinh viên × CLO, tiêu chí, chương, Pareto dạng lỗi, chất lượng đề, hai cán bộ chấm) · cần hỗ trợ · cải tiến và báo cáo học phần – xem [mục riêng](#kết-quả-học-tập-theo-clo-m6) |
 
 Ngoài ra: **đăng nhập** (quản trị cấp tài khoản, khách chỉ xem), phân quyền theo vai trò và phạm vi (lọc ở tầng truy vấn), thông báo trong ứng dụng khi công bố đợt, phiếu SUS tích hợp (TC3), giao diện chấm AI cho 2 chuyên gia (TC4), xuất minh chứng PDCA (CSV), giao diện điện thoại, đạt kiểm tra tự động WCAG 2.1 AA (axe-core) trên mọi màn hình.
 
@@ -35,7 +36,7 @@ Mở <http://localhost:8080> rồi đăng nhập (xem [Đăng nhập và tài kh
 npm test
 ```
 
-Chạy 40 kiểm thử đơn vị: bộ tính toán (đáp số tính tay ở mục 4), nhập tệp, bộ kiểm số, xóa thông tin nhận diện, “kịch bản” của dữ liệu mô phỏng, và phần đăng nhập (băm mật khẩu đối chiếu `node:crypto`, quy tắc tài khoản, gộp 3 chiều khi đăng lên GitHub, vai trò khách).
+Chạy 57 kiểm thử đơn vị: bộ tính toán (đáp số tính tay ở mục 4), nhập tệp, bộ kiểm số, xóa thông tin nhận diện, “kịch bản” của dữ liệu mô phỏng, phần đăng nhập (băm mật khẩu đối chiếu `node:crypto`, quy tắc tài khoản, gộp 3 chiều khi đăng lên GitHub, vai trò khách), và mô-đun CLO (điểm CLO, độ bao phủ minh chứng, kiểm tra ma trận, độ khó – độ phân biệt, hai cán bộ chấm, Pareto, tệp điểm Excel/LMS, kịch bản mô phỏng).
 
 ## Đưa lên GitHub Pages
 
@@ -86,7 +87,9 @@ Mở trang là gặp màn hình đăng nhập. Gửi đường dẫn <https://mr
 | Giảng viên ThS. Hoàng Hữu Bình | Lớp “Marketing căn bản – N03”: 🟡 THEO DÕI (IN1 < 3,5) → bấm “Áp dụng vào kế hoạch” từ gợi ý của trợ lý AI |
 | Cố vấn học tập | M3: sinh viên mình phụ trách, đánh dấu “đã liên hệ” |
 | Nhóm nghiên cứu, quản trị | M0 › Nhập dữ liệu › “Thử tệp mẫu có lỗi” · Kiểm chứng TC2 › “So sánh các mức giảm tối thiểu” |
-| Ban Giám hiệu | Chỉ xem M1 – tổng hợp toàn Trường |
+| Ban Giám hiệu | Chỉ xem M1 – tổng hợp toàn Trường; M6 ở mức tổng hợp lớp |
+| Giảng viên Nguyên lý kế toán (`gv:GV04`) | M6 › chọn HK1 2025–2026, lớp N02 › Phân tích CLO › “Tiêu chí, chương, dạng lỗi”: CLO3 thấp, yếu ở câu 2a (định khoản), nhóm lỗi định khoản > ½ lượt lỗi → Cần hỗ trợ → Cải tiến và báo cáo |
+| Lãnh đạo Khoa Kinh tế (`khoa:KT`) | M6 › Cấu hình ma trận › bản nháp 2026: sửa ô ma trận, “Xem trước tác động”, “Phê duyệt” |
 
 Thao tác (kế hoạch cải tiến, đã liên hệ, cấu hình, phiếu SUS, chấm AI, nhật ký) được lưu trong trình duyệt đang dùng. Muốn bắt đầu lại: xóa dữ liệu trang web của trình duyệt.
 
@@ -102,6 +105,18 @@ Thư mục [`web/templates/`](web/templates) có tệp mẫu sinh từ dữ li�
 | `diem_hoc_vu.csv` | ma_nghien_cuu, ma_lop_hp, diem_qua_trinh, diem_hoc_phan, gpa0 |
 | `tham_so_nghien_cuu.csv` | loai (trong_so / bat_bien / chenh_lech_tiem_an), ma, gia_tri, can_duoi, can_tren, ghi_chu |
 | `thu_vien_bien_phap.csv` | ma_bien_phap, ma_phuong_dien, ma_chi_bao, noi_dung, doi_tuong (GV/khoa/Trường), nguon, trang_thai_duyet |
+
+Tệp của mô-đun CLO (M6 › Nhập và kiểm tra điểm, dấu chấm phẩy, số kiểu `7,5`):
+
+| Tệp | Cột bắt buộc |
+|---|---|
+| `clo_hoc_phan.csv` | ma_hoc_phan, phien_ban, ma_clo, mo_ta, linh_vuc (kien_thuc/ky_nang/tu_chu), muc_nang_luc (3/6, 4/5…), trong_so (%) – tùy chọn: ma_plo, ma_pi, chuong, nguong_dat |
+| `ma_tran_danh_gia.csv` | ma_hoc_phan, phien_ban, ma_bai_danh_gia, ten_bai, nhom (A1/A2), trong_so_bai, ma_cau, noi_dung, diem_toi_da, ma_clo (`CLO3` hoặc `CLO3:0,5\|CLO4:0,5`) – tùy chọn: hinh_thuc, ma_de, ma_de_lan_2, so_lan_toi_da, chuong, phan_bo_clo, ma_loi |
+| `danh_sach_lop.csv` | ma_lop_hp, ma_nghien_cuu – tùy chọn: trang_thai, ty_le_chuyen_can |
+| `diem_chi_tiet.csv` (dạng dài, từ LMS) | ma_nghien_cuu, ma_lop_hp, ma_bai_danh_gia, lan_thi, ma_de, ma_cau, diem – tùy chọn: trang_thai, ngay, nguoi_cham_1/2, diem_cham_1/2, ma_loi, phuong_an |
+| `diem_theo_bai.csv` (bảng Excel) | ma_nghien_cuu, ma_lop_hp, ma_bai_danh_gia, lan_thi, ma_de + một cột cho mỗi mã câu/tiêu chí |
+
+`diem_chi_tiet_loi_mau.csv` cố ý có lỗi (trùng dòng, vượt điểm tối đa, sai mã đề, sai lần thi, sinh viên ngoài lớp, thiếu điểm…) để thử nút “Thử tệp mẫu có lỗi”. CLO và ma trận nhập vào thành **bản nháp**, chỉ dùng tính kết quả sau khi được phê duyệt.
 
 Bộ kiểm tra nhận CSV dấu phẩy hoặc chấm phẩy (Excel tiếng Việt), số kiểu `3,5` hoặc `3.5`, ngày `dd/mm/yyyy hh:mm`; báo lỗi theo dòng (thiếu cột, ô trống, giá trị ngoài phạm vi, trùng mã phiếu, trùng phiếu cùng sinh viên – lớp – đợt, lớp không có trong danh mục) và **từ chối mã giống mã sinh viên thật**. Tệp được đọc ngay trong trình duyệt, không gửi đi đâu. Sau khi sửa bộ sinh dữ liệu, chạy `npm run samples` để cập nhật tệp mẫu.
 
@@ -122,6 +137,32 @@ Toàn bộ nằm trong [`web/js/core/`](web/js/core) – mô-đun JavaScript thu
 | `factcheck.js`, `redact.js` | Bộ kiểm số cho văn bản AI; xóa tên, số điện thoại, mã số, email trong ý kiến |
 | `importer.js`, `csv.js` | Đọc CSV, kiểm tra 6 loại tệp, báo lỗi theo dòng |
 
+## Kết quả học tập theo CLO (M6)
+
+![M6 – Phân tích CLO: tiêu chí, Pareto dạng lỗi, mức đạt theo chương](docs/screenshots/m6-phan-tich-clo.png)
+
+Mô-đun phân tích kết quả người học theo học phần, đánh giá theo chuẩn đầu ra học phần (CLO). Học phần thí điểm là **Nguyên lý kế toán (ACP0371)**: 4 CLO, PLO/PI, mức năng lực, trọng số (Bảng 2), bài đánh giá A1.1 – A1.2 – A2 và phân bổ CLO (Bảng 4 – 5), rubric 1 – 4 và cấu trúc đề thi (12 câu trắc nghiệm + 2 câu tự luận, 2 đề/lần thi) lấy từ **đề cương chi tiết học phần**. **Điểm của sinh viên là mô phỏng** (`web/js/data/clo-synthetic.js`); điểm tối đa của từng tiêu chí rubric 1 – 3, danh mục dạng lỗi và bản nháp 2026 là phần MVP đề xuất.
+
+| Màn hình (`#/clo/…`) | Nghiệp vụ | Nội dung |
+|---|---|---|
+| Tổng hợp lớp | 4 | Tỷ lệ đạt từng CLO của các lớp, số sinh viên cần hỗ trợ, bộ quy tắc chờ phê duyệt |
+| Cấu hình ma trận | 1, 2 | Phiên bản đề cương (đã phê duyệt / chờ phê duyệt / bản nháp), CLO – PI – PLO, mức năng lực, ngưỡng đạt; ma trận câu hỏi/tiêu chí × CLO sửa được ở bản nháp; kiểm tra thiết kế (CLO chưa đo, phần điểm chưa gắn CLO, trọng số lệch giữa Bảng 2 – Bảng 4 – câu hỏi thực tế, phân bổ CLO của bài khác cấu trúc đề); xem trước tác động; phê duyệt có lịch sử |
+| Nhập và kiểm tra điểm | 3 | 5 loại tệp, báo lỗi theo dòng: trùng sinh viên, thiếu điểm, vượt điểm tối đa, sai mã đề, sai lần thi, ngoài danh sách lớp, mã sinh viên thật; tình trạng thu thập minh chứng của lớp; kiểm tra lại dữ liệu đã lưu |
+| Tổng quan lớp | 4, 8 | Phễu minh chứng (thuộc diện → đã nộp → đã chấm → đủ minh chứng → đạt), histogram có ngưỡng và vùng sát ngưỡng, box plot so sánh lớp/học kỳ cùng bộ quy tắc, điểm quá trình × điểm thi, đối chiếu khảo sát BL của cùng lớp, trợ lý AI |
+| Phân tích CLO | 4, 5, 7 | Cột + radar cùng chỉ số; ma trận sinh viên × CLO (bấm ô xem điểm nguồn); câu hỏi/tiêu chí, chương, Pareto dạng lỗi (đơn vị lượt lỗi, kèm số sinh viên); độ khó – độ phân biệt, phương án sai thường gặp, so sánh mã đề, đối chiếu hai cán bộ chấm |
+| Cần hỗ trợ | 6 | Thiếu bài, chưa đủ minh chứng, chưa đạt, sát ngưỡng; giao nhiệm vụ (nội dung, người phụ trách, hạn), đánh giá lại bằng nhiệm vụ tương đương, kết quả trước – sau tự cập nhật |
+| Cải tiến và báo cáo | 8, 9, 10 | Run chart có mốc cải tiến, biểu đồ kiểm soát để giai đoạn sau (chỉ bật khi đủ chuỗi đợt tương đương), so sánh lớp/học kỳ, theo dõi cải tiến (vấn đề – minh chứng – biện pháp – phụ trách – hạn – kết quả đánh giá lại), báo cáo học phần in được, CSV truy lại điểm nguồn |
+
+**Cách tính (đề xuất, chốt ở công việc 3.1):** mỗi câu/tiêu chí đóng góp vào điểm học phần theo trọng số bài × điểm tối đa câu; điểm CLO (thang 10) là trung bình có trọng số các câu gắn CLO đã có điểm; *đạt* khi điểm CLO ≥ 5,0 và có ≥ 60% minh chứng dự kiến; vắng thi, không nộp bài là *chưa có minh chứng* (không tính là 0); đánh giá lại lấy kết quả lần gần nhất của từng câu; mục tiêu lớp ≥ 70% sinh viên đạt mỗi CLO (mục tiêu, không phải giới hạn kiểm soát).
+
+![M6 – Cấu hình ma trận: CLO, kiểm tra thiết kế đánh giá, ma trận câu hỏi × CLO](docs/screenshots/m6-cau-hinh-ma-tran.png)
+
+**Khi nạp đề cương, bộ kiểm tra ma trận phát hiện:** trọng số CLO3 ở Bảng 2 là 45% nhưng các câu hỏi/tiêu chí đo CLO3 chỉ chiếm 31,25% điểm học phần (Bảng 4 ghi 30%); CLO2 15% so với 21% thực tế (Bảng 4 ghi 25%); bài thi cuối kỳ ở Bảng 4 ghi CLO1 10% – CLO2 20%, còn cấu trúc đề ở mục 10 cho CLO1 15% – CLO2 15%. Bản nháp 2026 trong MVP là ví dụ chỉnh ma trận (giữ nguyên trọng số CLO) để trình diễn quy trình phê duyệt – quyết định thuộc bộ môn, khoa.
+
+**Kịch bản mô phỏng:** HK1 2025–2026 CLO3 dưới mục tiêu (≈ 50%), câu 2a định khoản yếu nhất, nhóm lỗi định khoản > ½ lượt lỗi, hai cán bộ chấm lệch nhiều ở câu 2a lớp N02 → kế hoạch KH-0003, KH-0004 → HK2 2025–2026 CLO3 ≈ 77%, độ lệch chấm ≈ 0. HK1 2026–2027 (đang học, mới có bài kiểm tra): lớp N02 yếu tiêu chí “Hạch toán nghiệp vụ” → nhóm phụ đạo → kiểm tra lại bằng đề tương đương ngày 13/11 (CLO2 46% → 85%). Ngân hàng trắc nghiệm có câu ghi nhầm đáp án (TN087), câu quá dễ, phương án nhiễu mạnh để thử rà soát đề.
+
+**Gắn với dashboard BL (một nền tảng):** cùng danh mục lớp, giảng viên, sinh viên (mã nghiên cứu) và phân quyền theo vai trò – phạm vi; điểm học vụ ở M3 của các lớp có dữ liệu CLO được tính từ điểm chi tiết (một nguồn số liệu); trang lớp ở M2 có thẻ “Kết quả học tập theo CLO”, M3 có cột kết quả CLO; kế hoạch cải tiến CLO lưu chung kho PDCA (hiện ở M2 và M0 › Xuất minh chứng PDCA), mỗi biện pháp gắn một phương diện giảng dạy BL và lấy từ cùng thư viện biện pháp đã duyệt; M6 đối chiếu chỉ báo khảo sát “Tôi đạt được chuẩn đầu ra của học phần”, PS1 “Đánh giá, phản hồi”, điểm gắn kết với kết quả CLO đo được; thông báo, trợ lý AI (dữ kiện có mã, bộ kiểm số), nhật ký xem dữ liệu sinh viên và tham số ở M0 › Cấu hình dùng chung.
+
 ## Mô-đun AI
 
 - Mặc định (chạy được cả trên GitHub Pages): văn bản sinh **bằng mẫu câu từ chính các dữ kiện F1, F2…**, phân loại ý kiến bằng bộ quy tắc từ khóa. Giao diện ghi rõ bộ máy đang dùng.
@@ -136,10 +177,11 @@ web/                     # toàn bộ trang tĩnh – thư mục được triể
 ├─ assets/               # css/ (tokens.css màu TDU mục 9, app.css) · logo-tdu.png (logo Trường, cũng là biểu tượng thẻ)
 ├─ data/accounts.json    # tài khoản đăng nhập (mật khẩu đã băm)
 ├─ js/core/              # bộ tính toán thuần (mục 4), băm mật khẩu, quy tắc tài khoản
-├─ js/data/              # danh mục, dữ liệu mô phỏng, thư viện biện pháp, tham số nghiên cứu, xuất/nhập CSV
+├─ js/data/              # danh mục, dữ liệu mô phỏng, thư viện biện pháp, tham số nghiên cứu, xuất/nhập CSV; clo-catalog.js (đề cương ACP0371), clo-synthetic.js
 ├─ js/ai/                # dữ kiện có mã, sinh văn bản, phân loại ý kiến, gọi Ollama
 ├─ js/ui/                # thành phần giao diện, biểu đồ ECharts, biểu tượng
-├─ js/views/             # M0 – M5, đăng nhập, phiếu SUS, giới thiệu
+├─ js/views/             # M0 – M6 (clo-*.js: 6 màn hình kết quả CLO + báo cáo), đăng nhập, phiếu SUS, giới thiệu
+├─ js/api-clo.js         # tầng truy vấn M6 theo vai trò; core/clo.js, core/clo-import.js: bộ tính toán, kiểm tra tệp CLO
 ├─ js/api.js             # tầng truy vấn theo vai trò (tương ứng đường dẫn mục 5.8)
 ├─ js/auth.js            # đăng nhập, phiên, cấp tài khoản
 ├─ js/github.js          # quản trị đăng accounts.json lên repo qua GitHub API (token fine-grained)

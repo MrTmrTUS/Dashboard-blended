@@ -22,6 +22,7 @@ import { BenchmarkView } from './views/benchmark.js';
 import { AdminView } from './views/admin.js';
 import { SusView } from './views/sus.js';
 import { AboutView } from './views/about.js';
+import { cloView } from './views/clo.js';
 
 // ---- Dữ liệu ---------------------------------------------------------------------------
 
@@ -132,6 +133,8 @@ function resolveView(r, user) {
       return { view: StudentsView, params: {} };
     case 'doi-sanh':
       return { view: BenchmarkView, params: {} };
+    case 'clo':
+      return { view: cloView(user, b), params: { tab: b } };
     case 'quan-tri':
       return { view: AdminView, params: { tab: b } };
     case 'sus':
@@ -144,6 +147,7 @@ function resolveView(r, user) {
 }
 
 function viewFor(screen) {
+  if (screen === 'M6') return cloView(state.user, '');
   return { M1: OverviewView, M2: ClassListView, M3: StudentsView, M4: BenchmarkView, M0: AdminView }[screen] || OverviewView;
 }
 
@@ -218,7 +222,7 @@ export function route() {
     if (route.lastKey !== undefined) qs('.page-title', main)?.focus({ preventScroll: true });
   }
   route.lastKey = key;
-  document.title = `${view.title?.(ctx) ?? SCREENS[view.screen]?.label ?? 'Dashboard'} · Chất lượng giảng dạy BL · ${ORG_NAME}`;
+  document.title = `${view.title?.(ctx) ?? SCREENS[view.screen]?.label ?? 'Dashboard'} · Chất lượng giảng dạy và kết quả học tập · ${ORG_NAME}`;
 }
 
 // Mỗi lần vẽ thay #main bằng phần tử mới: trình nghe sự kiện mà màn hình trước gắn vào #main (qua mount)

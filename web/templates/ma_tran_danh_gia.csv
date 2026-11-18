@@ -1,0 +1,14 @@
+﻿ma_hoc_phan;phien_ban;ma_bai_danh_gia;ten_bai;nhom;trong_so_bai;ma_cau;noi_dung;diem_toi_da;ma_clo;hinh_thuc;ma_de;ma_de_lan_2;so_lan_toi_da;chuong;phan_bo_clo;ma_loi
+ACP0371;2025;CC;Chuyên cần, thái độ học tập;A1;20;TC1;Tham gia học tập;3;CLO4;ket_hop;CC;;1;;CLO4:20;
+ACP0371;2025;CC;Chuyên cần, thái độ học tập;A1;20;TC2;Chuẩn bị bài học (hoạt động LMS trước buổi học);2;CLO4;ket_hop;CC;;1;;CLO4:20;
+ACP0371;2025;CC;Chuyên cần, thái độ học tập;A1;20;TC3;Thái độ học tập;5;CLO4;ket_hop;CC;;1;;CLO4:20;
+ACP0371;2025;KT;Bài kiểm tra;A1;15;TC1;Kiến thức về nguyên tắc kế toán;6;CLO1;truc_tuyen;KT1;KT2;2;C1;CLO1:10|CLO2:5;
+ACP0371;2025;KT;Bài kiểm tra;A1;15;TC2;Hạch toán nghiệp vụ;4;CLO2;truc_tuyen;KT1;KT2;2;C2;CLO1:10|CLO2:5;DK1|DK2|DK3|TG1
+ACP0371;2025;TH;Bài tập thực hành;A1;15;TC1;Lập chứng từ kế toán;2,5;CLO3;truc_tuyen;TH;;1;C3;CLO3:10|CLO4:5;CT1|TT1
+ACP0371;2025;TH;Bài tập thực hành;A1;15;TC2;Ghi sổ kế toán (định khoản);2,5;CLO3;truc_tuyen;TH;;1;C2;CLO3:10|CLO4:5;DK1|DK2|DK3|SS1
+ACP0371;2025;TH;Bài tập thực hành;A1;15;TC3;Lập bảng tổng hợp/báo cáo kế toán;2,5;CLO3;truc_tuyen;TH;;1;C3;CLO3:10|CLO4:5;BC1|KQ1|TT1
+ACP0371;2025;TH;Bài tập thực hành;A1;15;TC4;Giải thích – phân tích ngắn tình huống kế toán;2,5;CLO4;truc_tuyen;TH;;1;C4;CLO3:10|CLO4:5;
+ACP0371;2025;CK;Bài thi cuối kỳ;A2;50;TN;Phần trắc nghiệm – 12 câu × 0,25 điểm (ngân hàng 200 câu);3;CLO1;truc_tiep;D1|D2;D3|D4;2;;CLO1:10|CLO2:20|CLO3:20;
+ACP0371;2025;CK;Bài thi cuối kỳ;A2;50;TL1;Tự luận câu 1 – quy trình kế toán, sổ và hình thức kế toán;3;CLO2;truc_tiep;D1|D2;D3|D4;2;C5;CLO1:10|CLO2:20|CLO3:20;HT1|SS1
+ACP0371;2025;CK;Bài thi cuối kỳ;A2;50;TL2a;Tự luận câu 2a – hạch toán (định khoản) các nghiệp vụ phát sinh;2,5;CLO3;truc_tiep;D1|D2;D3|D4;2;C4;CLO1:10|CLO2:20|CLO3:20;DK1|DK2|DK3|TG1|KQ1
+ACP0371;2025;CK;Bài thi cuối kỳ;A2;50;TL2b;Tự luận câu 2b – lập bảng tổng hợp/báo cáo kế toán;1,5;CLO3;truc_tiep;D1|D2;D3|D4;2;C3;CLO1:10|CLO2:20|CLO3:20;BC1|KQ1|TT1

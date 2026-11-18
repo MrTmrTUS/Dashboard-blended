@@ -7,7 +7,7 @@ import { FACTOR_BY_CODE } from '../core/constants.js';
 import { checkText } from '../core/factcheck.js';
 import { fmtPct, fmtScore, fmtSigned } from '../core/format.js';
 import { isNum } from '../core/stats.js';
-import { classFacts, scopeFacts, studentFacts } from './facts.js';
+import { classFacts, cloFacts, scopeFacts, studentFacts } from './facts.js';
 
 export const SYSTEM_PROMPT =
   'Bạn là trợ lý đảm bảo chất lượng. Chỉ dùng các dữ kiện F1 – Fn. Không thêm số liệu, không suy đoán nguyên nhân ngoài dữ kiện. ' +
@@ -58,6 +58,24 @@ function scopeTemplate({ refs, scope }) {
   if (refs.theme && s.length < 5) s.push(`Ý kiến sinh viên nhắc nhiều nhất đến “${lcFirst(refs.theme.label)}” (${refs.theme.n} ý kiến tiêu cực) [${refs.theme.ref}].`);
   return s.slice(0, 5).join(' ');
 }
+
+function cloTemplate({ refs, name }) {
+  const s = [];
+  if (refs.progress) s.push(`Kết quả của ${name} là tạm tính vì học kỳ chưa kết thúc [${refs.progress}].`);
+  if (refs.all) s.push(`Tỷ lệ sinh viên đạt mọi CLO đã đánh giá là ${fmtPct(refs.all.rate)} [${refs.all.ref}].`);
+  const [l1, l2] = refs.low;
+  if (l1) s.push(`${l1.code} thấp nhất và chưa đạt mục tiêu, với ${fmtPct(l1.rate)} sinh viên đạt [${l1.ref}].`);
+  else s.push(`Mọi CLO đã đánh giá đều đạt mục tiêu của bộ quy tắc [${refs.all?.ref ?? 'F1'}].`);
+  if (l2) s.push(`${l2.code} cũng dưới mục tiêu (${fmtPct(l2.rate)}) [${l2.ref}].`);
+  if (refs.error && s.length < 5) s.push(`Xét mọi CLO, dạng lỗi gặp nhiều nhất thuộc nhóm "${refs.error.group}", chiếm ${fmtPct(refs.error.share)} số lượt lỗi [${refs.error.ref}].`);
+  if (refs.retest && s.length < 5) s.push(`Đánh giá lại bằng nhiệm vụ tương đương đã cải thiện ${refs.retest.code} [${refs.retest.ref}].`);
+  if (refs.evidence && s.length < 5) s.push(`Cần bổ sung minh chứng: ${refs.evidence.missing} sinh viên thiếu bài và ${refs.evidence.insufficient} sinh viên chưa đủ minh chứng [${refs.evidence.ref}].`);
+  if (refs.best && s.length < 5) s.push(`Điểm mạnh là ${refs.best.code} (${fmtPct(refs.best.rate)}) [${refs.best.ref}].`);
+  return s.slice(0, 5).join(' ');
+}
+
+// Phương diện giảng dạy gắn với loại CLO yếu – để gợi ý biện pháp từ cùng thư viện đã duyệt.
+const CLO_DIMS = { ky_nang: ['PS2', 'IN1'], kien_thuc: ['IN2', 'PS1'], tu_chu: ['PS1', 'IN3'] };
 
 function studentTemplate({ refs, stats }) {
   const s = [];
@@ -189,6 +207,17 @@ export async function generate(kind, input, { cfg, library = [] }) {
     measures = pickMeasures(library, dims, { preferTargets: ['khoa', 'Trường'] });
     context = { pham_vi: input.scope, dot: input.waveLabel };
     text = scopeTemplate({ refs, scope: input.scope });
+  } else if (kind === 'clo') {
+    ({ facts, refs } = cloFacts(input));
+    const l1 = refs.low[0];
+    if (l1) {
+      const dims = (CLO_DIMS[l1.domain] || ['PS2']).map((code) => ({ code, mean: null, ref: l1.ref, basis: `${l1.code} đạt ${fmtPct(l1.rate)}` }));
+      // Ưu tiên biện pháp dành cho kết quả CLO (nguồn "Hướng dẫn đánh giá theo CLO"), vẫn trong thư viện đã duyệt.
+      const cloLib = library.filter((m) => /CLO/.test(m.source || '') && dims.some((x) => x.code === m.dim));
+      measures = pickMeasures(cloLib.length ? cloLib : library, dims, { lowIndicators: ['Q_P2_7', 'Q_I1_1', 'Q_P1_4', 'Q_P1_5'], preferTargets: ['GV'] }).map((m) => ({ ...m, basis: dims.find((x) => x.code === m.dim)?.basis }));
+    }
+    context = { lop: input.cls.name, hoc_ky: input.semesterLabel, bo_quy_tac: input.rv.version };
+    text = cloTemplate({ refs, name: input.cls.name });
   } else {
     const r = studentFacts(input, cfg);
     facts = r.facts;

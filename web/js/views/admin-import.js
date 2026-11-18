@@ -25,6 +25,7 @@ export function renderImportTab(ctx) {
   const steps = ['Chọn loại tệp', 'Chọn tệp', 'Kiểm tra lỗi', 'Xem trước', 'Xác nhận và tính lại'];
   const stage = !wizard.report ? 1 : wizard.report.ok ? 3 : 2;
   return html`
+    ${banner({ kind: 'info', iconText: '🎯', title: 'Dữ liệu đánh giá theo CLO nhập ở M6', body: html`CLO học phần, ma trận câu hỏi × CLO, danh sách lớp và điểm chi tiết (Excel/LMS) nhập ở <a href="#/clo/nhap">M6 › Nhập và kiểm tra điểm</a> – dùng chung danh mục lớp, mã nghiên cứu của trang này.` })}
     ${banner({ kind: 'info', title: 'Quy trình nhập theo mục 3.6 và Phụ lục A', body: html`Nhập lần lượt: danh mục lớp → (sinh viên, cố vấn) → phiếu khảo sát → điểm học vụ → tham số nghiên cứu → thư viện biện pháp. Tệp CSV dấu phẩy hoặc chấm phẩy (Excel tiếng Việt), mã hóa UTF-8. <b>Không nhận mã sinh viên thật</b> – chỉ mã nghiên cứu do Phòng QLĐT cấp. Tệp được kiểm tra ngay trong trình duyệt, không gửi đi đâu.` })}
     <ol class="steps" aria-label="Các bước nhập">${steps.map((s, i) => html`<li class="${i < stage ? 'is-done' : i === stage ? 'is-active' : ''}">${s}</li>`)}</ol>
     <div class="grid grid--40-60 grid--start">

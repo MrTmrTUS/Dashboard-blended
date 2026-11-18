@@ -20,6 +20,8 @@ import { icon } from '../ui/icons.js';
 import { renderImportTab, mountImportTab } from './admin-import.js';
 import { renderUsersTab, mountUsersTab } from './admin-users.js';
 import { renderVerifyTab, mountVerifyTab } from './admin-verify.js';
+import { cloMart, evaluatePlan } from '../api-clo.js';
+import { CLO_IMPORT_ORDER, CLO_TEMPLATES, exportCloCsv } from '../core/clo-import.js';
 import { library } from './assistant.js';
 import { PLAN_STATUS } from './classes.js';
 
@@ -94,6 +96,7 @@ function renderDataTab(ctx) {
             <dt>Khoa · học phần · lớp</dt><dd>${fmtInt(ds.faculties.length)} khoa · ${fmtInt(ds.courses.length)} học phần · ${fmtInt(ds.classes.length)} lớp học phần</dd>
             <dt>Phiếu khảo sát</dt><dd>${fmtInt(ds.responses.length)} phiếu · ${fmtInt(nValid)} hợp lệ (${fmtNum((nValid / Math.max(1, ds.responses.length)) * 100, 1)}%)</dd>
             <dt>Sinh viên · điểm học vụ</dt><dd>${fmtInt(ds.students.length)} mã nghiên cứu · ${fmtInt(ds.grades.length)} bản ghi điểm</dd>
+            <dt>Đánh giá theo CLO (M6)</dt><dd>${cloSummaryText()}</dd>
             <dt>Lần tính gần nhất</dt><dd>${fmtDateTime(mart.builtAt)} · ${fmtInt(mart.durationMs)} ms</dd>
           </dl>`,
         foot: html`<button type="button" class="btn btn--sm" data-recompute>${icon('refresh')}Tính lại</button>
@@ -107,7 +110,8 @@ function renderDataTab(ctx) {
           (k) => html`<li class="list-row" style="padding:8px 0"><span class="list-row__main"><span class="list-row__title">${TEMPLATES[k].file}</span><br><span class="list-row__meta">${TEMPLATES[k].title}</span></span>
             <button type="button" class="btn btn--sm" data-export="${k}">${icon('download')}CSV</button></li>`,
         )}</ul>`,
-        foot: html`<button type="button" class="btn btn--sm" data-export-pdca>${icon('download')}Xuất minh chứng PDCA (CSV)</button><span>Kế hoạch cải tiến kèm điểm trước – sau, phục vụ Tiêu chí 6.4, 6.5, 10.1.</span>`,
+        foot: html`<button type="button" class="btn btn--sm" data-export-pdca>${icon('download')}Xuất minh chứng PDCA (CSV)</button><span>Kế hoạch cải tiến (khảo sát BL và kết quả CLO) kèm kết quả trước – sau, phục vụ Tiêu chí 6.4, 6.5, 10.1.</span>
+          <details class="howto" style="margin:8px 0 0;border:0;padding:0;width:100%"><summary>Tệp đánh giá theo CLO (M6)</summary><div class="howto__body"><ul class="list">${CLO_IMPORT_ORDER.map((k) => html`<li class="list-row" style="padding:6px 0"><span class="list-row__main"><span class="list-row__title">${CLO_TEMPLATES[k].file}</span><br><span class="list-row__meta">${CLO_TEMPLATES[k].title}</span></span><button type="button" class="btn btn--sm" data-export-clo="${k}">${icon('download')}CSV</button></li>`)}</ul></div></details>`,
       })}
     </div>
     <div class="mt-16">${plainCard({
@@ -150,6 +154,7 @@ function mountDataTab(root, ctx) {
     downloadText(TEMPLATES[k].file, exportCsv(state.dataset, k));
   });
   on(root, 'click', '[data-export-pdca]', () => downloadText('minh_chung_pdca.csv', pdcaCsv()));
+  on(root, 'click', '[data-export-clo]', (e, btn) => downloadText(CLO_TEMPLATES[btn.dataset.exportClo].file, exportCloCsv(state.dataset, btn.dataset.exportClo)));
   on(root, 'click', '[data-publish]', (e, btn) => {
     const w = state.mart.waves.find((x) => x.id === btn.dataset.publish);
     if (!confirm(`Công bố ${waveLabel(w)}? Khoa và giảng viên có lớp cảnh báo sẽ nhận thông báo.`)) return;
@@ -161,15 +166,47 @@ function mountDataTab(root, ctx) {
   });
 }
 
+function cloSummaryText() {
+  const m = cloMart();
+  const approved = m.versions.filter((v) => v.status === 'approved').length;
+  const pending = m.versions.filter((v) => v.status !== 'approved').length;
+  const subs = (state.dataset.outcomes?.submissions || []).length;
+  return `${fmtInt(approved)} bộ quy tắc đã phê duyệt · ${fmtInt(pending)} bản nháp · ${fmtInt(m.entries.length)} lớp · ${fmtInt(subs)} bài làm có điểm chi tiết`;
+}
+
 function pdcaCsv() {
   const lineages = [...new Set(planStore.all().map((p) => state.mart.classById.get(p.classId)?.lineage).filter(Boolean))];
+  const pct = (v) => (v === null || v === undefined ? '' : `${fmtNum(v * 100, 1)}%`);
   const rows = lineages.flatMap((l) => lineagePlans(l)).map((p) => {
     const cls = state.mart.classById.get(p.classId);
+    if (p.domain === 'clo') {
+      const e = p.eval || evaluatePlan(p);
+      return {
+        ma_ke_hoach: p.id,
+        nguon: 'Kết quả CLO (M6)',
+        lop_hoc_phan: cls?.name ?? p.classId,
+        ma_lop_hp: p.classId,
+        dot_lap: p.semesterLabel ?? p.semesterId,
+        clo: p.clo,
+        phuong_dien: p.dimension,
+        ma_bien_phap: p.measureCode ?? '',
+        noi_dung: p.action,
+        nguoi_phu_trach: p.owner,
+        han: p.due,
+        trang_thai: PLAN_STATUS[p.status]?.label ?? p.status,
+        diem_truoc: pct(e.before),
+        diem_sau: pct(e.after),
+        dot_sau: e.afterLabel ?? '',
+        ket_qua: { pending: 'Chờ đánh giá lại', reached: 'Đạt mục tiêu', improved: 'Có cải thiện', notImproved: 'Chưa cải thiện' }[e.verdict],
+      };
+    }
     return {
       ma_ke_hoach: p.id,
+      nguon: 'Khảo sát BL',
       lop_hoc_phan: cls?.name ?? p.classId,
       ma_lop_hp: p.classId,
       dot_lap: p.wave ? waveLabel(p.wave) : p.waveId,
+      clo: '',
       phuong_dien: p.dimension,
       ma_bien_phap: p.measureCode ?? '',
       noi_dung: p.action,
@@ -182,7 +219,7 @@ function pdcaCsv() {
       ket_qua: { pending: 'Chờ đợt sau', reached: 'Đạt ngưỡng', improved: 'Có cải thiện', notImproved: 'Chưa cải thiện' }[p.verdict],
     };
   });
-  const cols = ['ma_ke_hoach', 'lop_hoc_phan', 'ma_lop_hp', 'dot_lap', 'phuong_dien', 'ma_bien_phap', 'noi_dung', 'nguoi_phu_trach', 'han', 'trang_thai', 'diem_truoc', 'diem_sau', 'dot_sau', 'ket_qua'];
+  const cols = ['ma_ke_hoach', 'nguon', 'lop_hoc_phan', 'ma_lop_hp', 'dot_lap', 'clo', 'phuong_dien', 'ma_bien_phap', 'noi_dung', 'nguoi_phu_trach', 'han', 'trang_thai', 'diem_truoc', 'diem_sau', 'dot_sau', 'ket_qua'];
   return toCsv(cols, rows);
 }
 

@@ -21,3 +21,8 @@ BP-PS1-03,PS1,Q_P1_6,Theo dõi tiến độ trên LMS hằng tuần; nhắc riê
 BP-PS2-01,PS2,Q_P2_6,"Thiết kế thảo luận trực tuyến có câu hỏi định hướng, người điều phối và hạn phản hồi.",GV,Hướng dẫn dạy học tích cực (mẫu),da_duyet
 BP-PS2-02,PS2,Q_P2_7,"Tăng hoạt động nhóm, dự án gắn với tình huống thực tế; phân vai rõ trong nhóm.",GV,Hướng dẫn dạy học tích cực (mẫu),da_duyet
 BP-PS2-03,PS2,Q_P2_1,"Dùng câu hỏi tương tác, khảo sát nhanh mỗi 15 – 20 phút trong buổi học trực tuyến.",GV,Hướng dẫn dạy học tích cực (mẫu),da_duyet
+BP-PS2-04,PS2,Q_P2_7,"Thêm buổi thực hành theo tình huống doanh nghiệp cho kỹ năng có tỷ lệ đạt CLO thấp (làm mẫu – làm cùng – tự làm), kèm kiểm tra nhanh sau chương.",GV,Hướng dẫn đánh giá theo CLO (mẫu),da_duyet
+BP-IN1-05,IN1,Q_I1_1,"Mở bộ bài luyện tập tự chấm trên LMS theo dạng lỗi thường gặp, kèm video giải mẫu ngắn, cho nhóm sinh viên chưa đạt CLO; kiểm tra lại bằng nhiệm vụ tương đương.",GV,Hướng dẫn đánh giá theo CLO (mẫu),da_duyet
+BP-PS1-04,PS1,Q_P1_5,"Xây dựng đáp án, hướng dẫn chấm chi tiết theo từng ý; chấm thử chung trước khi chấm chính thức và đối chiếu điểm hai cán bộ chấm.",khoa,Hướng dẫn đánh giá theo CLO (mẫu),da_duyet
+BP-PS1-05,PS1,Q_P1_4,Trả bài kèm nhận xét theo tiêu chí rubric và dạng lỗi; yêu cầu sinh viên sửa lại phần sai trước bài đánh giá kế tiếp.,GV,Hướng dẫn đánh giá theo CLO (mẫu),da_duyet
+BP-CT1-04,CT1,Q_C1_1,"Rà soát ma trận CLO – bài đánh giá trước mỗi học kỳ; công bố cho sinh viên CLO nào được đo ở bài nào, theo rubric nào.",khoa,Hướng dẫn đánh giá theo CLO (mẫu),da_duyet

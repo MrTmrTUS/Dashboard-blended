@@ -77,7 +77,7 @@ export function disposeCharts(root = document) {
 }
 
 // ---- Phần chung ----------------------------------------------------------------------
-function base() {
+export function base() {
   const t = theme();
   return {
     animationDuration: 300,
@@ -95,7 +95,7 @@ function base() {
   };
 }
 
-function valueAxis(extra = {}) {
+export function valueAxis(extra = {}) {
   const t = theme();
   return {
     type: 'value',
@@ -108,7 +108,7 @@ function valueAxis(extra = {}) {
   };
 }
 
-function categoryAxis(data, extra = {}) {
+export function categoryAxis(data, extra = {}) {
   const t = theme();
   return {
     type: 'category',

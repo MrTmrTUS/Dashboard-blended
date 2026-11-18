@@ -16,6 +16,12 @@ const CODE_PATTERNS = [
   /\b\d{4}\s?[–-]\s?\d{4}\b/g,
   /\bN\d{2}\b/g,
   /\b[A-Z]{2,4}\d{3}\b/g,
+  // Mã của mô-đun CLO (M6): CLO, PLO, PI, dạng lỗi, câu hỏi, mã đề, mã học phần 4 chữ số.
+  /\bCLO\d+\b/g,
+  /\bP(?:LO|I)\d+(?:\.\d+)?\b/g,
+  /\b(?:DK|TG|KQ|SS|HT|BC|TT)\d\b/g,
+  /\b(?:TL\d[ab]?|TN\d{3}|KT\d|D\d)\b/g,
+  /\b[A-Z]{2,4}\d{4}\b/g,
 ];
 
 const NUMBER_RE = /\d+(?:[.,]\d+)*/g;

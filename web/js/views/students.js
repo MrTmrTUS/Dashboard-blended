@@ -8,6 +8,18 @@ import { banner, chartCard, dataTable, emptyState, kpiTile, legend, pageHead, pl
 import { mountChart, studentScatterOption, theme } from '../ui/charts.js';
 import { html, on, raw } from '../ui/dom.js';
 import { icon } from '../ui/icons.js';
+import { cloStudentStatus } from '../api-clo.js';
+import { cloHash } from './clo-common.js';
+
+// Kết quả CLO của cùng sinh viên trong cùng lớp (M6) – hai nguồn: nguy cơ từ khảo sát/điểm quá trình và kết quả đo theo CLO.
+function cloCell(r) {
+  const st = cloStudentStatus(r.classId, r.researchCode);
+  if (!st) return html`<span class="muted">–</span>`;
+  const bad = st.issues.filter((i) => ['banned', 'missing', 'not_achieved', 'insufficient'].includes(i.kind));
+  const href = cloHash('ho-tro', { ky: r.cls?.semesterId, lop: r.classId });
+  if (!bad.length) return html`<a class="chip chip--ok" href="${href}"><span class="chip__icon" aria-hidden="true">✔</span>Đạt CLO đã đánh giá</a>`;
+  return html`<a class="clo-chips" href="${href}" title="Mở danh sách cần hỗ trợ theo CLO">${bad.slice(0, 3).map((i) => html`<span class="chip chip--${i.kind === 'insufficient' ? 'na' : 'alert'}">${i.label}</span>`)}</a>`;
+}
 
 export const StudentsView = {
   screen: 'M3',
@@ -166,6 +178,7 @@ function riskTable(rows, d, compact = false) {
       { label: 'Gắn kết', num: true, render: (r) => fmtScore(r.eng) },
       { label: 'Điểm QT', num: true, render: (r) => fmtScore(r.process, 1) },
       { label: 'Xác suất nguy cơ', render: (r) => prob(r.prob) },
+      ...(compact ? [] : [{ label: 'Kết quả CLO (M6)', render: cloCell }]),
       ...(compact ? [] : [{ label: 'Gợi ý hỗ trợ', render: (r) => html`<span class="small">${r.suggestion}</span>` }]),
       ...(d.hasOutcome ? [{ label: 'Kết quả thực tế (hồi cứu)', render: outcome }] : []),
       ...(compact ? [] : [{ label: 'Đã liên hệ', render: contactBox }]),
@@ -180,7 +193,7 @@ function riskCards(rows, d) {
       ${statusChip(r.status, { label: r.status === 'ok' ? 'Ổn định' : undefined })}
       <span class="list-row__main"><span class="list-row__title">${r.researchCode}</span> <span class="list-row__meta">· ${r.cls?.name ?? ''}</span><br>
         <span class="list-row__meta">Gắn kết ${fmtScore(r.eng)} · Điểm QT ${fmtScore(r.process, 1)} · Nguy cơ ${isNum(r.prob) ? fmtPct(r.prob) : '–'}${d.hasOutcome && r.final !== null ? ` · Điểm HP ${fmtScore(r.final, 1)}` : ''}</span><br>
-        <span class="small">${r.suggestion}</span></span>
+        <span class="small">${r.suggestion}</span>${cloStudentStatus(r.classId, r.researchCode) ? html`<br>${cloCell(r)}` : ''}</span>
       ${contactBox(r)}
     </li>`,
   )}</ul>`;

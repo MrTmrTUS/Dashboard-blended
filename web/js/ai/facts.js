@@ -104,3 +104,32 @@ export function studentFacts(res, cfg) {
   };
   return { facts: b.facts, refs, stats: { kProc, kEng, both, done, need: need.length, total: rows.length, ...res.counts } };
 }
+
+// ---- Kết quả học tập theo CLO (M6) ----------------------------------------------------------------
+// input: { cls, rv, res, semesterLabel, pareto? } – mọi số đều lấy từ kết quả đã tính của lớp.
+export function cloFacts(input) {
+  const b = builder();
+  const { rv, res } = input;
+  const refs = {};
+  const target = rv.rules.target;
+  const assessed = rv.cloCodes.map((c) => ({ code: c, ...res.clo[c] })).filter((x) => !x.notAssessed && isNum(x.rate) && x.n >= 5);
+  if (res.all.n) refs.all = { rate: res.all.rate, ref: b.add(`Đạt mọi CLO đã đánh giá ${fmtPct(res.all.rate)} (${fmtInt(res.all.nAchieved)}/${fmtInt(res.all.n)} sinh viên đủ minh chứng)`, { kind: 'all' }) };
+  const sorted = [...assessed].sort((a, c) => a.rate - c.rate);
+  const low = sorted.filter((x) => x.rate < target);
+  refs.low = low.slice(0, 2).map((x) => ({ code: x.code, rate: x.rate, mean: x.mean, domain: rv.cloByCode.get(x.code)?.domain, ref: b.add(`${x.code} đạt ${fmtPct(x.rate)} (${fmtInt(x.nAchieved)}/${fmtInt(x.n)}), mục tiêu ${fmtPct(target)}; điểm CLO trung bình ${fmtScore(x.mean)}`, { kind: 'low', code: x.code }) }));
+  const best = sorted[sorted.length - 1];
+  if (best && !low.some((x) => x.code === best.code)) refs.best = { code: best.code, rate: best.rate, ref: b.add(`${best.code} đạt ${fmtPct(best.rate)} – cao nhất trong các CLO đã đánh giá`, { kind: 'best' }) };
+  const missing = res.students.filter((s) => s.missingWork.length || s.banned.length).length;
+  const insufficient = res.students.filter((s) => s.nInsufficient).length;
+  if (missing || insufficient) refs.evidence = { missing, insufficient, ref: b.add(`${fmtInt(missing)} sinh viên thiếu bài hoặc không đủ điều kiện dự thi; ${fmtInt(insufficient)} sinh viên chưa đủ minh chứng cho ít nhất một CLO`, { kind: 'evidence' }) };
+  if (input.pareto?.groups?.length) {
+    const g = input.pareto.groups[0];
+    refs.error = { group: g.group, share: g.share, ref: b.add(`Nhóm lỗi "${g.group}" chiếm ${fmtPct(g.share)} trong ${fmtInt(input.pareto.total)} lượt lỗi của mọi CLO (lần đánh giá đầu)`, { kind: 'error' }) };
+  }
+  if (res.inProgress) refs.progress = b.add(`Học kỳ đang diễn ra: đã tổ chức ${fmtInt(res.held.length)}/${fmtInt(rv.assessments.length)} bài đánh giá`, { kind: 'progress' });
+  if (input.initial) {
+    const up = rv.cloCodes.map((c) => ({ c, a: input.initial.clo[c], b: res.clo[c] })).filter((x) => !x.b.notAssessed && isNum(x.a.rate) && isNum(x.b.rate) && x.b.rate - x.a.rate >= 0.05).sort((x, y) => y.b.rate - y.a.rate - (x.b.rate - x.a.rate))[0];
+    if (up) refs.retest = { code: up.c, ref: b.add(`Sau đánh giá lại, ${up.c} tăng từ ${fmtPct(up.a.rate)} lên ${fmtPct(up.b.rate)}`, { kind: 'retest' }) };
+  }
+  return { facts: b.facts, refs };
+}

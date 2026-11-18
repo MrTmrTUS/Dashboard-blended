@@ -11,6 +11,8 @@ import { groupColor, theme } from '../ui/charts.js';
 import { html, isMobile, on, raw } from '../ui/dom.js';
 import { icon } from '../ui/icons.js';
 import { library } from './assistant.js';
+import { cloClassSummary } from '../api-clo.js';
+import { cloHash, pctOrDash, rateChip } from './clo-common.js';
 import { filterMeta, standardFilterDefs } from './shell.js';
 
 export const PLAN_STATUS = {
@@ -121,7 +123,7 @@ export const ClassDetailView = {
       { label: d.cls.name },
     ];
     if (d.noData) {
-      return html`${pageHead({ crumbs, title: d.cls.name })}${plainCard({ body: emptyState({ title: 'Chưa có đợt đánh giá', text: 'Lớp chưa có phiếu khảo sát trong học kỳ này.' }) })}${plansCard(ctx, d)}`;
+      return html`${pageHead({ crumbs, title: d.cls.name })}${plainCard({ body: emptyState({ title: 'Chưa có đợt đánh giá', text: 'Lớp chưa có phiếu khảo sát trong học kỳ này.' }) })}${cloCard(ctx, d)}${plansCard(ctx, d)}`;
     }
     const cw = d.cw;
     const firstReason = cw.reasons[0];
@@ -155,6 +157,7 @@ export const ClassDetailView = {
             ${profileCard(d)}
             <div class="stack">${lowestCard(d)}${commentsCard(d)}</div>
           </div>`}
+      ${cloCard(ctx, d)}
       <div class="mt-16">${plansCard(ctx, d)}</div>`;
   },
   mount(root, ctx) {
@@ -272,6 +275,24 @@ function commentsCard(d) {
   });
 }
 
+// ---- Kết quả học tập theo CLO của cùng lớp (M6) – nối hai nguồn minh chứng -----------------------
+
+function cloCard(ctx, d) {
+  const sum = cloClassSummary(ctx.user, d.cls.id);
+  if (!sum) return '';
+  const { res, rv } = sum;
+  const q = { ky: d.cls.semesterId, lop: d.cls.id };
+  const low = rv.cloCodes.map((c) => res.clo[c]).filter((x) => !x.notAssessed && isNum(x.rate)).sort((a, b) => a.rate - b.rate)[0];
+  return html`<div class="mt-16">${plainCard({
+    title: 'Kết quả học tập theo CLO',
+    sub: `Cùng lớp, cùng sinh viên – đánh giá theo đề cương ${rv.courseName} (bộ quy tắc ${rv.version})${res.inProgress ? ' · học kỳ đang diễn ra, tạm tính' : ''}`,
+    body: html`<div class="clo-chips">${rv.cloCodes.map((c) => rateChip(res.clo[c], c))}</div>
+      <p class="small" style="margin-top:8px">Đạt mọi CLO đã đánh giá <b>${pctOrDash(res.all.rate)}</b> (${fmtInt(res.all.nAchieved)}/${fmtInt(res.all.n)} sinh viên đủ minh chứng)${low ? html` · thấp nhất <b>${low.code}</b> ${pctOrDash(low.rate)} (mục tiêu ${pctOrDash(rv.rules.target)})` : ''} · ${fmtInt(sum.needs)} sinh viên cần hỗ trợ.
+      Đối chiếu với phương diện PS1 “Đánh giá, phản hồi” và chỉ báo “Tôi đạt được chuẩn đầu ra của học phần” ở mục Tổng quan lớp của M6.</p>`,
+    foot: html`<a href="${cloHash('tong-quan', q)}">${icon('target', { size: 16 })}Tổng quan CLO của lớp</a><a href="${cloHash('phan-tich', q)}">${icon('arrowRight', { size: 16 })}Phân tích CLO</a>${sum.studentLevel ? html`<a href="${cloHash('ho-tro', q)}">${icon('arrowRight', { size: 16 })}Sinh viên cần hỗ trợ</a>` : ''}`,
+  })}</div>`;
+}
+
 // ---- Kế hoạch cải tiến (PDCA) ------------------------------------------------------------------
 
 function plansCard(ctx, d) {
@@ -279,13 +300,13 @@ function plansCard(ctx, d) {
   const plans = d.plans || [];
   return plainCard({
     title: 'Kế hoạch cải tiến (PDCA)',
-    sub: 'Phương diện · biện pháp · người phụ trách · hạn · trạng thái · kết quả đợt sau (tự so sánh trước – sau)',
+    sub: 'Phương diện · biện pháp · người phụ trách · hạn · trạng thái · kết quả đợt sau (tự so sánh trước – sau) · gồm cả cải tiến từ kết quả CLO (M6)',
     actions: editable ? html`<button type="button" class="btn btn--sm" data-add-plan>${icon('plus')}Thêm kế hoạch</button>` : '',
     body: plans.length
       ? dataTable({
           columns: [
-            { label: 'Đợt lập', render: (p) => html`${p.wave ? waveLabel(p.wave, { short: true }) : p.waveId}<br><span class="caption">${p.id}</span>` },
-            { label: 'Phương diện', render: (p) => html`${codeTag(p.dimension)} ${FACTOR_BY_CODE[p.dimension]?.short ?? ''}` },
+            { label: 'Đợt lập', render: (p) => (p.domain === 'clo' ? html`${p.semesterLabel}<br><span class="caption">${p.id} · kết quả CLO</span>` : html`${p.wave ? waveLabel(p.wave, { short: true }) : p.waveId}<br><span class="caption">${p.id}</span>`) },
+            { label: 'Phương diện', render: (p) => html`${p.domain === 'clo' ? html`<span class="code-tag code-tag--KQ">${p.clo || 'CLO'}</span> ` : ''}${codeTag(p.dimension)} ${FACTOR_BY_CODE[p.dimension]?.short ?? ''}` },
             { label: 'Biện pháp', render: (p) => html`${p.action}${p.measureCode ? html`<br><span class="caption">${p.measureCode}</span>` : ''}${p.note ? html`<br><span class="caption">${p.note}</span>` : ''}` },
             { label: 'Người phụ trách', key: 'owner' },
             { label: 'Hạn', render: (p) => fmtDate(p.due) },
@@ -294,13 +315,18 @@ function plansCard(ctx, d) {
               label: 'Kết quả đợt sau',
               render: (p) => {
                 const v = VERDICT[p.verdict];
+                if (p.domain === 'clo') {
+                  const e = p.eval || {};
+                  const lab = { pending: 'Chờ đánh giá lại', reached: 'Đạt mục tiêu', improved: 'Có cải thiện', notImproved: 'Chưa cải thiện' }[p.verdict];
+                  return html`<span class="chip chip--${v.cls}"><span class="chip__icon" aria-hidden="true">${v.icon}</span>${lab}</span>${e.text ? html`<br><span class="caption">${e.text}</span>` : isNum(e.before) ? html`<br><span class="caption">${e.label}: ${pctOrDash(e.before)} → ${pctOrDash(e.after)}${e.afterLabel ? ` · ${e.afterLabel}` : ''}</span>` : ''}`;
+                }
                 return html`<span class="chip chip--${v.cls}"><span class="chip__icon" aria-hidden="true">${v.icon}</span>${v.label}</span>${isNum(p.before)
                   ? html`<br><span class="caption">${fmtScore(p.before)} → ${isNum(p.after) ? fmtScore(p.after) : '…'}${isNum(p.delta) ? ` (${p.delta >= 0 ? '+' : '−'}${fmtScore(Math.abs(p.delta))})` : ''}${p.afterWave ? ` · ${waveLabel(p.afterWave, { short: true })}` : ''}</span>`
                   : ''}`;
               },
             },
             ...(editable
-              ? [{ label: '', render: (p) => html`<span style="white-space:nowrap"><button type="button" class="btn-tool" data-edit-plan="${p.id}" aria-label="Sửa ${p.id}">${icon('edit')}</button><button type="button" class="btn-tool" data-del-plan="${p.id}" aria-label="Xóa ${p.id}">${icon('trash')}</button></span>` }]
+              ? [{ label: '', render: (p) => (p.domain === 'clo' ? html`<a class="btn-tool" href="${cloHash('cai-tien', { hp: p.courseId })}" aria-label="Sửa ${p.id} ở M6">${icon('edit')}<span class="caption">M6</span></a>` : html`<span style="white-space:nowrap"><button type="button" class="btn-tool" data-edit-plan="${p.id}" aria-label="Sửa ${p.id}">${icon('edit')}</button><button type="button" class="btn-tool" data-del-plan="${p.id}" aria-label="Xóa ${p.id}">${icon('trash')}</button></span>`) }]
               : []),
           ],
           rows: plans,

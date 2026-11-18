@@ -5,6 +5,7 @@ import { DEFAULT_CONFIG } from '../core/config.js';
 import { ALL_ITEM_CODES, ENG_ITEM_INDEX, FACTORS, FACTOR_ITEM_INDEX } from '../core/constants.js';
 import { createRng } from '../core/rng.js';
 import { COURSES, FACULTIES, SEMESTERS, personName } from './catalog.js';
+import { buildCloOutcomes, deriveGrades } from './clo-synthetic.js';
 import { COMMENT_TEMPLATES, PII_WRAPPERS } from './comments.js';
 import { MEASURES } from './measures.js';
 import { RESEARCH_PARAMS } from './params.js';
@@ -40,7 +41,7 @@ const SCRIPTS = {
     effect: (w) => ({ ALL: w === 4 ? 0.16 : w === 5 ? -0.08 : w === 6 ? -0.44 : 0, PS2: w === 6 ? -0.15 : 0 }),
     topics: (w) => (w === 6 ? { it_tuong_tac: 0.45 } : {}),
   },
-  'KTO201-N01': {
+  'ACP0371-N01': {
     effect: (w) => (w === 4 ? { PS2: -0.68 } : w === 5 ? { PS2: -0.12 } : {}),
     topics: (w) => (w === 4 ? { it_tuong_tac: 0.4 } : {}),
   },
@@ -174,6 +175,7 @@ export function buildSyntheticDataset({ seed = 'tdu-bl-2026' } = {}) {
   const grades = [];
   const truthLabels = {};
   const prng = rng.fork('responses');
+  const engByClass = {};
   const itemOffset = new Float64Array(ALL_ITEM_CODES.length).map(() => prng.normal(0, 0.12));
   const templatesByTopic = {};
   for (const t of COMMENT_TEMPLATES) (templatesByTopic[t.topic] ||= []).push(t);
@@ -188,6 +190,7 @@ export function buildSyntheticDataset({ seed = 'tdu-bl-2026' } = {}) {
     // độ gắn kết của sinh viên trong lớp này (ổn định trong học kỳ)
     const classEng = {};
     for (const code of enrolled) classEng[code] = traits[code].engagement + prng.normal(0, 0.35);
+    engByClass[cls.id] = classEng;
 
     for (const wave of classWaves) {
       const w = wave.order;
@@ -313,7 +316,7 @@ export function buildSyntheticDataset({ seed = 'tdu-bl-2026' } = {}) {
 
   // Kế hoạch cải tiến mẫu (để trình diễn chu trình PDCA "trước – sau").
   const findClass = (sem, lineage) => classes.find((c) => c.semesterId === sem && c.lineage === lineage);
-  const kto = findClass('HK2-2526', 'KTO201-N01');
+  const kto = findClass('HK2-2526', 'ACP0371-N01');
   const ktc = findClass('HK1-2627', 'KTC201-N01');
   const seedPlans = [
     {
@@ -346,6 +349,104 @@ export function buildSyntheticDataset({ seed = 'tdu-bl-2026' } = {}) {
     },
   ];
 
+  // Đánh giá theo CLO (M6): điểm chi tiết của học phần Nguyên lý kế toán, sinh bằng nhánh hạt giống riêng
+  // (không làm đổi dữ liệu khảo sát); điểm học vụ của các lớp này được tính lại từ điểm chi tiết.
+  const outcomes = buildCloOutcomes({ rng: rng.fork('clo'), classes, enrolment, traits, engByClass, semesters, lecturers });
+  const gradesOut = deriveGrades(outcomes, classes, grades);
+  const cloClass = (sem, lineage) => findClass(sem, lineage)?.id;
+  const cloLecturer = lecturers.find((l) => l.id === findClass('HK1-2627', 'ACP0371-N02')?.lecturerId)?.name || 'Giảng viên phụ trách';
+  seedPlans.push(
+    {
+      id: 'KH-0003',
+      domain: 'clo',
+      scope: 'course',
+      courseId: 'ACP0371',
+      classId: cloClass('HK1-2526', 'ACP0371-N01'),
+      semesterId: 'HK1-2526',
+      clo: 'CLO3',
+      metric: 'rate',
+      dimension: 'PS2',
+      measureCode: 'BP-PS2-04',
+      issue: 'CLO3 dưới mục tiêu 70% ở cả hai lớp; nhóm lỗi định khoản chiếm phần lớn lượt lỗi ở câu 2a và bài thực hành.',
+      evidence: 'Báo cáo CLO HK1 2025–2026 · Pareto dạng lỗi · phân tích câu hỏi câu 2a',
+      action: 'Thêm 2 buổi thực hành định khoản theo tình huống doanh nghiệp (Chương 2 – 4); bộ 40 nghiệp vụ tự chấm trên LMS; kiểm tra nhanh 10 phút sau Chương 2.',
+      owner: 'Bộ môn Kế toán – giảng viên phụ trách',
+      due: '2026-02-15',
+      status: 'hoan_thanh',
+      reassess: 'Đánh giá lại bằng kết quả CLO3 học kỳ kế tiếp (cùng đề cương, cùng cấu trúc đề)',
+      createdAt: '2026-01-20T02:00:00.000Z',
+      createdBy: cloLecturer,
+      note: '',
+    },
+    {
+      id: 'KH-0004',
+      domain: 'clo',
+      scope: 'course',
+      courseId: 'ACP0371',
+      classId: cloClass('HK1-2526', 'ACP0371-N02'),
+      semesterId: 'HK1-2526',
+      clo: 'CLO3',
+      metric: 'rater',
+      item: 'CK:TL2a',
+      dimension: 'PS1',
+      measureCode: 'BP-PS1-04',
+      issue: 'Câu 2a (định khoản) bài thi cuối kỳ: điểm của hai cán bộ chấm lệch nhau quá 0,5 điểm ở nhiều bài của lớp N02.',
+      evidence: 'Đối chiếu điểm chấm vòng 1 – vòng 2 HK1 2025–2026',
+      action: 'Xây dựng đáp án chi tiết theo từng bút toán; chấm thử chung 10 bài để thống nhất trước khi chấm chính thức.',
+      owner: 'Trưởng bộ môn Kế toán',
+      due: '2026-05-30',
+      status: 'hoan_thanh',
+      reassess: 'So sánh tỷ lệ bài lệch > 0,5 điểm ở kỳ thi kế tiếp',
+      createdAt: '2026-02-10T02:00:00.000Z',
+      createdBy: 'Trưởng bộ môn Kế toán',
+      note: '',
+    },
+    {
+      id: 'KH-0005',
+      domain: 'clo',
+      scope: 'class',
+      courseId: 'ACP0371',
+      classId: cloClass('HK1-2627', 'ACP0371-N02'),
+      semesterId: 'HK1-2627',
+      clo: 'CLO2',
+      metric: 'retest',
+      dimension: 'IN1',
+      measureCode: 'BP-IN1-05',
+      issue: 'Bài kiểm tra (kết thúc Chương 3): tiêu chí "Hạch toán nghiệp vụ" yếu, CLO2 tạm tính dưới mục tiêu.',
+      evidence: 'Kết quả bài kiểm tra 30/10/2026 · dạng lỗi định khoản',
+      action: 'Nhóm phụ đạo: bộ 30 nghiệp vụ tự chấm trên LMS và buổi phụ đạo 06/11; kiểm tra lại bằng đề tương đương ngày 13/11.',
+      owner: cloLecturer,
+      due: '2026-11-20',
+      status: 'dang_thuc_hien',
+      reassess: 'Kiểm tra lại phần hạch toán bằng đề tương đương (lần 2)',
+      createdAt: '2026-11-03T02:00:00.000Z',
+      createdBy: cloLecturer,
+      note: '',
+    },
+    {
+      id: 'KH-0006',
+      domain: 'clo',
+      scope: 'course',
+      courseId: 'ACP0371',
+      classId: cloClass('HK1-2627', 'ACP0371-N01'),
+      semesterId: 'HK1-2627',
+      clo: '',
+      metric: 'design',
+      dimension: 'CT1',
+      measureCode: 'BP-CT1-04',
+      issue: 'Kiểm tra ma trận: trọng số CLO3 trong đề cương 45% nhưng câu hỏi/tiêu chí đo CLO3 chỉ chiếm khoảng 31% điểm; phân bổ CLO của bài thi cuối kỳ khác cấu trúc đề.',
+      evidence: 'M6 › Cấu hình ma trận – bộ quy tắc 2025',
+      action: 'Trình Khoa phê duyệt bản nháp 2026: chỉnh ma trận gán tiêu chí, giữ nguyên trọng số CLO; áp dụng từ HK2 2026–2027.',
+      owner: 'Trưởng bộ môn Kế toán',
+      due: '2026-12-15',
+      status: 'dang_thuc_hien',
+      reassess: 'Chạy lại kiểm tra ma trận sau khi phê duyệt',
+      createdAt: '2026-11-10T03:00:00.000Z',
+      createdBy: 'Trưởng bộ môn Kế toán',
+      note: '',
+    },
+  );
+
   return {
     meta: {
       source: 'synthetic',
@@ -362,7 +463,8 @@ export function buildSyntheticDataset({ seed = 'tdu-bl-2026' } = {}) {
     classes: classes.map(({ drift, semesterIndex, ...c }) => c),
     students,
     responses,
-    grades,
+    grades: gradesOut,
+    outcomes,
     params: structuredClone(RESEARCH_PARAMS),
     measures: MEASURES.map((m) => ({ ...m })),
     seedPlans,

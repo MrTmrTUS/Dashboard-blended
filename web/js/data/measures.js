@@ -46,6 +46,17 @@ export const MEASURES = [
     text: 'Tăng hoạt động nhóm, dự án gắn với tình huống thực tế; phân vai rõ trong nhóm.' },
   { code: 'BP-PS2-03', dim: 'PS2', indicator: 'Q_P2_1', target: 'GV', source: 'Hướng dẫn dạy học tích cực (mẫu)', status: 'da_duyet',
     text: 'Dùng câu hỏi tương tác, khảo sát nhanh mỗi 15 – 20 phút trong buổi học trực tuyến.' },
+  // Biện pháp gắn với kết quả đánh giá theo CLO (M6) – vẫn xếp theo phương diện giảng dạy để dùng chung kế hoạch PDCA.
+  { code: 'BP-PS2-04', dim: 'PS2', indicator: 'Q_P2_7', target: 'GV', source: 'Hướng dẫn đánh giá theo CLO (mẫu)', status: 'da_duyet',
+    text: 'Thêm buổi thực hành theo tình huống doanh nghiệp cho kỹ năng có tỷ lệ đạt CLO thấp (làm mẫu – làm cùng – tự làm), kèm kiểm tra nhanh sau chương.' },
+  { code: 'BP-IN1-05', dim: 'IN1', indicator: 'Q_I1_1', target: 'GV', source: 'Hướng dẫn đánh giá theo CLO (mẫu)', status: 'da_duyet',
+    text: 'Mở bộ bài luyện tập tự chấm trên LMS theo dạng lỗi thường gặp, kèm video giải mẫu ngắn, cho nhóm sinh viên chưa đạt CLO; kiểm tra lại bằng nhiệm vụ tương đương.' },
+  { code: 'BP-PS1-04', dim: 'PS1', indicator: 'Q_P1_5', target: 'khoa', source: 'Hướng dẫn đánh giá theo CLO (mẫu)', status: 'da_duyet',
+    text: 'Xây dựng đáp án, hướng dẫn chấm chi tiết theo từng ý; chấm thử chung trước khi chấm chính thức và đối chiếu điểm hai cán bộ chấm.' },
+  { code: 'BP-PS1-05', dim: 'PS1', indicator: 'Q_P1_4', target: 'GV', source: 'Hướng dẫn đánh giá theo CLO (mẫu)', status: 'da_duyet',
+    text: 'Trả bài kèm nhận xét theo tiêu chí rubric và dạng lỗi; yêu cầu sinh viên sửa lại phần sai trước bài đánh giá kế tiếp.' },
+  { code: 'BP-CT1-04', dim: 'CT1', indicator: 'Q_C1_1', target: 'khoa', source: 'Hướng dẫn đánh giá theo CLO (mẫu)', status: 'da_duyet',
+    text: 'Rà soát ma trận CLO – bài đánh giá trước mỗi học kỳ; công bố cho sinh viên CLO nào được đo ở bài nào, theo rubric nào.' },
 ];
 
 export const MEASURE_STATUS = {

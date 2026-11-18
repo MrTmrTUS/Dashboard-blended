@@ -11,7 +11,7 @@ import { icon } from '../ui/icons.js';
 export function renderTopbar(ctx) {
   const { user } = ctx;
   const screens = ROLES[user.role].screens;
-  const order = ['M1', 'M2', 'M3', 'M4', 'M0'].filter((s) => screens.includes(s));
+  const order = ['M1', 'M2', 'M6', 'M3', 'M4', 'M0'].filter((s) => screens.includes(s));
   const notif = notifications(user);
   const read = notifRead.set();
   const unread = notif.filter((n) => !read.has(n.id)).length;
@@ -39,7 +39,7 @@ export function renderTopbar(ctx) {
 
 export function renderBottomNav(ctx) {
   const screens = ROLES[ctx.user.role].screens;
-  const order = ['M1', 'M2', 'M3', 'M4', 'M0'].filter((s) => screens.includes(s));
+  const order = ['M1', 'M2', 'M6', 'M3', 'M4', 'M0'].filter((s) => screens.includes(s));
   return html`${order.map((code) => {
     const s = SCREENS[code];
     return html`<a href="#/${s.route}"${raw(ctx.screen === code ? ' aria-current="page"' : '')}>${icon(s.icon)}<span>${s.label}</span></a>`;

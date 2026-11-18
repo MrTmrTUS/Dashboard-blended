@@ -30,7 +30,7 @@ Bản MVP là **nguyên mẫu chạy được, hoàn toàn trên trình duyệt*
 | 5.6 | Riêng tư | Mã nghiên cứu, từ chối mã giống mã sinh viên thật, ẩn n < 10, xóa thông tin nhận diện, nhật ký xem dữ liệu sinh viên, thư viện đóng gói kèm, phông hệ thống |
 | 5.8 | Đường dẫn chính | `#/tong-quan?ky=&dot=&khoa=`, `#/lop/<id>`, `#/lop/<id>/ke-hoach`, `#/sinh-vien?lop=`, `#/doi-sanh`, `#/quan-tri/<mục>` |
 | 6.1 | Luồng dữ liệu mỗi đợt | Nhập → kiểm tra → tính theo lô → cảnh báo → AI → *chờ công bố* → Phòng QLCL công bố → thông báo |
-| 8 | TC1 – TC4, kỹ thuật, tiếp cận | Trang kiểm chứng có bảng điểm TC1 – TC4; 40 kiểm thử đơn vị; axe-core không còn vi phạm WCAG 2.1 A/AA |
+| 8 | TC1 – TC4, kỹ thuật, tiếp cận | Trang kiểm chứng có bảng điểm TC1 – TC4; 57 kiểm thử đơn vị; axe-core không còn vi phạm WCAG 2.1 A/AA |
 | 9 | Màu, chữ, số, quy ước biểu đồ, màn hình nhỏ | `assets/css/tokens.css`; số `vi-VN`; dưới 768 px phễu và bản đồ nhiệt thành danh sách |
 
 **Đã có trong MVP:** đăng nhập bằng tài khoản do quản trị cấp (tệp `web/data/accounts.json`, mật khẩu băm PBKDF2-SHA256; quản trị kết nối token GitHub thì trang tự đăng tệp lên repo để mọi máy đăng nhập được), vai trò khách chỉ xem, quản trị “xem thử dưới vai trò” – kiểm tra trên trình duyệt nên chỉ dùng khi thử nghiệm với dữ liệu mô phỏng.
@@ -100,7 +100,7 @@ Kết quả hiệu chỉnh: AUC kiểm định chéo ≈ 0,82 (TC1 đạt); báo
 
 ## 6. Kiểm thử đã chạy
 
-- `npm test`: 40 kiểm thử (băm mật khẩu PBKDF2 đối chiếu node:crypto, tệp và quy tắc tài khoản, gộp 3 chiều khi đăng lên GitHub, vai trò khách chỉ xem; điểm phiếu và 3 điều kiện hợp lệ, ngưỡng 2/3, chỉ số và nhóm, μ/σ/z có đáp số tính tay, giới hạn phễu, Pareto, 4 vùng ma trận, quy tắc cảnh báo lớp và sinh viên, giảm liên tiếp, logistic và kiểm định chéo, Monte Carlo, CSV, kiểm tra tệp nhập, bộ kiểm số, xóa thông tin nhận diện, phân loại ý kiến, tái lập dữ liệu mô phỏng).
+- `npm test`: 57 kiểm thử (mô-đun CLO: điểm CLO và minh chứng tính tay, kiểm tra ma trận, độ khó – độ phân biệt, hai cán bộ chấm, Pareto, tệp điểm Excel/LMS, kịch bản mô phỏng; băm mật khẩu PBKDF2 đối chiếu node:crypto, tệp và quy tắc tài khoản, gộp 3 chiều khi đăng lên GitHub, vai trò khách chỉ xem; điểm phiếu và 3 điều kiện hợp lệ, ngưỡng 2/3, chỉ số và nhóm, μ/σ/z có đáp số tính tay, giới hạn phễu, Pareto, 4 vùng ma trận, quy tắc cảnh báo lớp và sinh viên, giảm liên tiếp, logistic và kiểm định chéo, Monte Carlo, CSV, kiểm tra tệp nhập, bộ kiểm số, xóa thông tin nhận diện, phân loại ý kiến, tái lập dữ liệu mô phỏng).
 - Kịch bản trình duyệt (Playwright): đổi vai trò, chặn truy cập ngoài phạm vi, lập kế hoạch từ gợi ý AI, phản hồi 👍, nhật ký khi xem M3, nhập tệp lỗi mẫu, nhập bộ dữ liệu mới → công bố đợt, khôi phục dữ liệu mô phỏng, đổi cấu hình có lịch sử, thư viện biện pháp (thêm → duyệt), chấm TC4, Monte Carlo, phiếu SUS, “Xem dạng bảng”.
 - axe-core (WCAG 2.1 A/AA) trên 13 màn hình ở cả 1440 px và 390 px: không còn vi phạm.
 - Thời gian đến khi biểu đồ M1 hiển thị: khoảng 0,9 giây trên máy tính thông thường (đã gồm sinh dữ liệu mô phỏng và tính toàn bộ chỉ số trên trình duyệt).
@@ -111,3 +111,32 @@ Kết quả hiệu chỉnh: AUC kiểm định chéo ≈ 0,82 (TC1 đạt); báo
 2. Giao 3 tác vụ của TC3 (tìm lớp đỏ, đọc lý do, lập kế hoạch) và ghi lại chỗ người dùng lúng túng.
 3. Hỏi về các mục ở phần 3 (ngưỡng, cách hiểu “giảm liên tiếp”, trục thu hẹp, nội dung thông báo), rồi cập nhật tài liệu lên v2.
 4. Kết thúc bằng phiếu SUS trong ứng dụng.
+
+## 8. Mô-đun M6 – Kết quả học tập theo CLO
+
+Bổ sung theo đề xuất nghiệp vụ “phân tích kết quả người học theo học phần, đánh giá theo CLO” (10 nghiệp vụ, 6 màn hình bản đầu). CLO và cấu trúc đánh giá của học phần thí điểm lấy từ đề cương chi tiết Nguyên lý kế toán (ACP0371); điểm là mô phỏng.
+
+### Quyết định cần chốt
+
+1. **Điểm CLO** = trung bình có trọng số các câu/tiêu chí gắn CLO, trọng số = phần đóng góp vào điểm học phần (trọng số bài × điểm tối đa câu / tổng điểm bài). Câu gắn nhiều CLO chia theo trọng số gán.
+2. **Đạt / chưa đạt / chưa đủ minh chứng:** đạt khi điểm CLO ≥ 5,0 (thang 10) và minh chứng ≥ 60% (theo trọng số) của các bài *đã tổ chức*; vắng thi, không nộp bài, không đủ điều kiện dự thi là chưa có minh chứng (tùy chọn “tính là 0” trong bộ quy tắc). Học kỳ đang diễn ra hiển thị “tạm tính”, CLO chưa có bài đánh giá là “chưa đánh giá”.
+3. **Đánh giá lại** (thi lần 2, nhiệm vụ tương đương): lấy kết quả lần gần nhất của từng câu; bộ lọc “Lần đánh giá” cho xem kết quả lần đầu.
+4. **Mục tiêu lớp** 70% sinh viên đạt mỗi CLO; trạng thái lớp: đạt / dưới ≤ 10 điểm % / dưới > 10 điểm % / dưới 5 sinh viên đủ minh chứng.
+5. **Bộ quy tắc theo phiên bản đề cương:** lớp dùng phiên bản *đã phê duyệt* có hiệu lực mới nhất ≤ học kỳ của lớp. CLO, ma trận nhập từ tệp vào thành bản nháp; lãnh đạo khoa phụ trách học phần, Phòng QLCL, quản trị phê duyệt.
+6. **Kiểm tra ma trận:** so 3 nguồn – trọng số CLO (Bảng 2), phân bổ khai báo theo bài (Bảng 4), câu hỏi/tiêu chí thực tế; lệch > 5 điểm % là cảnh báo, > 10 điểm % là lỗi. Với đề cương ACP0371: CLO3 45% so với 31,25% thực tế; CLO2 15% so với 21%; bài thi cuối kỳ khai báo CLO1 10% – CLO2 20% nhưng cấu trúc đề cho 15% – 15%. Cần bộ môn quyết định: tiêu chí “Hạch toán nghiệp vụ” của bài kiểm tra gán CLO2 (theo Bảng 4) hay CLO3 (theo nội dung định khoản); tiêu chí 4 của bài thực hành có thực sự đo CLO4.
+7. **Chất lượng đề:** độ khó p, độ phân biệt D (27% nhóm cao – thấp), tương quan câu – phần còn lại; ngưỡng mặc định p > 0,9 quá dễ, p < 0,3 quá khó, D < 0,2 phân biệt kém; trắc nghiệm phân tích theo câu trong ngân hàng, theo mã đề. Đây là gợi ý rà soát, không phải kết luận.
+8. **Hai cán bộ chấm:** dung sai 0,5 điểm/câu; báo tỷ lệ bài lệch quá dung sai, lệch trung bình, tương quan.
+9. **Pareto dạng lỗi:** đơn vị là lượt lỗi, luôn kèm số sinh viên mắc; không vẽ sẵn mốc 80%.
+10. **Biểu đồ kiểm soát:** biểu đồ p cho tỷ lệ chưa đạt, chỉ bật khi có ≥ 8 đợt tương đương; giai đoạn đầu dùng run chart (trung vị, mốc cải tiến). Mục tiêu 70% không phải giới hạn kiểm soát.
+11. **Kiểm tra trình duyệt của M6:** đã chạy Playwright theo 6 vai trò (không lỗi JavaScript, không tràn ngang ở 1440 px và 390 px, các thao tác phê duyệt, sửa ma trận, giao nhiệm vụ, thử tệp lỗi, lưu nhận định, truy vết điểm nguồn); chưa chạy lại axe-core cho M6 trong lần bổ sung này.
+12. **Quyền xem:** dữ liệu cấp sinh viên (ma trận sinh viên × CLO, điểm nguồn, danh sách cần hỗ trợ) chỉ giảng viên phụ trách lớp; cố vấn học tập xem danh sách cần hỗ trợ của sinh viên mình phụ trách; các vai trò khác xem tổng hợp lớp. Mọi lượt xem cấp sinh viên ghi nhật ký.
+
+### Gắn với dashboard BL
+
+| Thành phần | Cách dùng chung |
+|---|---|
+| Danh mục, phân quyền | Cùng lớp học phần, giảng viên, sinh viên (mã nghiên cứu), vai trò và phạm vi (`access.js`) |
+| Điểm học vụ | Lớp có điểm chi tiết: điểm quá trình, điểm học phần ở M3 tính từ dữ liệu CLO (`deriveGrades`) |
+| Kế hoạch cải tiến | Kho PDCA chung (`domain: 'clo'`), hiện ở M2, M6, M0 › Xuất minh chứng PDCA; biện pháp gắn phương diện giảng dạy, lấy từ thư viện đã duyệt |
+| Khảo sát ↔ kết quả | M6 đối chiếu Q_Pt1_1, Q_C1_1, Q_P1_1/2/4/5, PS1 của cùng lớp và tương quan gắn kết – điểm CLO; M2 có thẻ kết quả CLO; M3 có cột kết quả CLO |
+| AI, thông báo, cấu hình | Dữ kiện có mã cho tóm tắt CLO, bộ kiểm số nhận mã CLO/PLO/PI; thông báo CLO dưới mục tiêu, nhiệm vụ hỗ trợ, bộ quy tắc chờ phê duyệt; tham số phân tích ở M0 › Cấu hình |

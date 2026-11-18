@@ -104,7 +104,7 @@ export async function renderAssistant(host, request, ctx, { force = false } = {}
               <div class="measure__head">${codeTag(m.dim)}<span>${FACTOR_BY_CODE[m.dim]?.short}</span><span class="measure__code">${m.measure.code}</span></div>
               <div>${m.measure.text}</div>
               ${m.note ? html`<div class="caption" style="margin-top:4px">${m.note}</div>` : ''}
-              <div class="caption" style="margin-top:4px">Căn cứ: ${m.dim} ${fmtScore(m.mean)} ${m.ref ? html`<button type="button" class="fact-ref" data-fact="${m.ref}">${m.ref}</button>` : ''} · Đối tượng: ${m.measure.target}</div>
+              <div class="caption" style="margin-top:4px">Căn cứ: ${m.basis ?? `${m.dim} ${fmtScore(m.mean)}`} ${m.ref ? html`<button type="button" class="fact-ref" data-fact="${m.ref}">${m.ref}</button>` : ''} · Đối tượng: ${m.measure.target}</div>
               ${isReadOnly(user)
                 ? ''
                 : html`<div class="feedback" data-target="${target}:${m.measure.code}">
