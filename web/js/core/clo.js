@@ -173,10 +173,11 @@ export function checkMatrix(rv, { weightTol = 0.05, splitTol = 0.02 } = {}) {
 
 // ---- Điểm bài, điểm CLO của sinh viên trong một lớp (nghiệp vụ 4) ----------------------------------
 
-function assessmentScore10(sub, a, aMax) {
-  if (!sub || sub.st !== 'graded') return null;
+// Điểm bài (thang 10) từ điểm từng câu đã chọn theo chế độ (lần 1, hoặc lần gần nhất của từng câu): lần đánh giá lại
+// chỉ chấm lại một phần (ví dụ một tiêu chí) thì các câu còn lại giữ điểm lần trước – nhất quán với điểm CLO.
+function assessmentScore10(values, a, aMax) {
   let s = 0;
-  for (const it of a.items) s += isNum(sub.pts?.[it.code]) ? sub.pts[it.code] : 0;
+  for (const it of a.items) s += isNum(values[`${a.code}:${it.code}`]) ? values[`${a.code}:${it.code}`] : 0;
   return aMax > 0 ? (10 * s) / aMax : null;
 }
 
@@ -228,7 +229,7 @@ export function classResult({ rv, roster, subs, mode = 'latest', rules: rulesIn,
       for (const x of list) if (x.st === 'graded') last = x;
       retaken[a.code] = list.some((x) => x.t > 1 && x.st === 'graded');
       if (last && last.t > 1 && aState[a.code] !== 'graded') aState[a.code] = 'graded';
-      aScore[a.code] = last ? assessmentScore10(last, a, rv.aMax[a.code]) : null;
+      aScore[a.code] = last ? assessmentScore10(values, a, rv.aMax[a.code]) : null;
     }
     const clo = {};
     for (const c of rv.cloCodes) {

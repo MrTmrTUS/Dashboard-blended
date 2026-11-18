@@ -7,6 +7,7 @@ import { IMPORT_ORDER, TEMPLATES } from '../web/js/core/importer.js';
 import { CLO_IMPORT_ORDER, CLO_TEMPLATES, exportCloCsv } from '../web/js/core/clo-import.js';
 import { exportCsv } from '../web/js/data/dataset-io.js';
 import { buildSyntheticDataset } from '../web/js/data/synthetic.js';
+import { simulateEndOfSemester } from './clo-chay-thu.mjs';
 
 const OUT = fileURLToPath(new URL('../web/templates/', import.meta.url));
 process.env.TZ = 'Asia/Ho_Chi_Minh';
@@ -88,3 +89,9 @@ codes.forEach((code, k) => {
 rowsBad.push({ ...rowOf(codes[0], 'TC2'), ma_nghien_cuu: outsiders[1], lan_thi: '2', ma_de: 'KT2' }); // lần 2 khi chưa có lần 1
 await writeFile(`${OUT}diem_chi_tiet_loi_mau.csv`, toCsv(head, rowsBad, { delimiter: ';' }));
 console.log(`diem_chi_tiet_loi_mau.csv: ${rowsBad.length} dòng (có lỗi cố ý)`);
+
+// ---- Bộ dữ liệu chạy thử cuối kỳ HK1 2026–2027 cho M6 (scripts/clo-chay-thu.mjs) ----
+const RUN_DIR = `${OUT}chay-thu-clo/`;
+await mkdir(RUN_DIR, { recursive: true });
+for (const f of simulateEndOfSemester(ds).files) await writeFile(`${RUN_DIR}${f.name}`, f.text);
+console.log('chay-thu-clo/: 6 tệp chạy thử cuối kỳ HK1 2026–2027');

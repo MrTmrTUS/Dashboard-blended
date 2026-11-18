@@ -152,7 +152,7 @@ function validate(fileName, text) {
 function issueSummary(r) {
   const entries = Object.entries(r.issues || {}).filter(([, n]) => n);
   if (!entries.length) return '';
-  return html`<div class="clo-chips" style="margin:8px 0">${entries.map(([k, n]) => html`<span class="chip chip--${k === 'absentWork' ? 'warn' : 'alert'}">${ISSUE_LABELS[k] ?? k}: ${fmtInt(n)}</span>`)}</div>`;
+  return html`<div class="clo-chips" style="margin:8px 0">${entries.map(([k, n]) => html`<span class="chip chip--${['absentWork', 'partial'].includes(k) ? 'warn' : 'alert'}">${ISSUE_LABELS[k] ?? k}: ${fmtInt(n)}</span>`)}</div>`;
 }
 
 function reportCards(ctx) {

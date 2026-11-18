@@ -36,7 +36,7 @@ Mở <http://localhost:8080> rồi đăng nhập (xem [Đăng nhập và tài kh
 npm test
 ```
 
-Chạy 57 kiểm thử đơn vị: bộ tính toán (đáp số tính tay ở mục 4), nhập tệp, bộ kiểm số, xóa thông tin nhận diện, “kịch bản” của dữ liệu mô phỏng, phần đăng nhập (băm mật khẩu đối chiếu `node:crypto`, quy tắc tài khoản, gộp 3 chiều khi đăng lên GitHub, vai trò khách), và mô-đun CLO (điểm CLO, độ bao phủ minh chứng, kiểm tra ma trận, độ khó – độ phân biệt, hai cán bộ chấm, Pareto, tệp điểm Excel/LMS, kịch bản mô phỏng).
+Chạy 63 kiểm thử đơn vị: bộ tính toán (đáp số tính tay ở mục 4), nhập tệp, bộ kiểm số, xóa thông tin nhận diện, “kịch bản” của dữ liệu mô phỏng, phần đăng nhập (băm mật khẩu đối chiếu `node:crypto`, quy tắc tài khoản, gộp 3 chiều khi đăng lên GitHub, vai trò khách), và mô-đun CLO (điểm CLO, độ bao phủ minh chứng, kiểm tra ma trận, độ khó – độ phân biệt, hai cán bộ chấm, Pareto, tệp điểm Excel/LMS, kịch bản mô phỏng, chạy thử cuối kỳ đối chiếu với cách tính độc lập).
 
 ## Đưa lên GitHub Pages
 
@@ -160,6 +160,19 @@ Mô-đun phân tích kết quả người học theo học phần, đánh giá t
 **Khi nạp đề cương, bộ kiểm tra ma trận phát hiện:** trọng số CLO3 ở Bảng 2 là 45% nhưng các câu hỏi/tiêu chí đo CLO3 chỉ chiếm 31,25% điểm học phần (Bảng 4 ghi 30%); CLO2 15% so với 21% thực tế (Bảng 4 ghi 25%); bài thi cuối kỳ ở Bảng 4 ghi CLO1 10% – CLO2 20%, còn cấu trúc đề ở mục 10 cho CLO1 15% – CLO2 15%. Bản nháp 2026 trong MVP là ví dụ chỉnh ma trận (giữ nguyên trọng số CLO) để trình diễn quy trình phê duyệt – quyết định thuộc bộ môn, khoa.
 
 **Kịch bản mô phỏng:** HK1 2025–2026 CLO3 dưới mục tiêu (≈ 50%), câu 2a định khoản yếu nhất, nhóm lỗi định khoản > ½ lượt lỗi, hai cán bộ chấm lệch nhiều ở câu 2a lớp N02 → kế hoạch KH-0003, KH-0004 → HK2 2025–2026 CLO3 ≈ 77%, độ lệch chấm ≈ 0. HK1 2026–2027 (đang học, mới có bài kiểm tra): lớp N02 yếu tiêu chí “Hạch toán nghiệp vụ” → nhóm phụ đạo → kiểm tra lại bằng đề tương đương ngày 13/11 (CLO2 46% → 85%). Ngân hàng trắc nghiệm có câu ghi nhầm đáp án (TN087), câu quá dễ, phương án nhiễu mạnh để thử rà soát đề.
+
+**Chạy thử cuối kỳ HK1 2026–2027** ([`web/templates/chay-thu-clo/`](web/templates/chay-thu-clo)): 6 tệp mô phỏng phần còn lại của học kỳ đang diễn ra bằng một mô hình sinh viên riêng (`scripts/clo-chay-thu.mjs`, sinh lại bằng `npm run samples`). Đăng nhập tài khoản quản trị hoặc giảng viên, vào M6 › Nhập và kiểm tra điểm, chọn đúng loại tệp và nhập lần lượt ở chế độ *Bổ sung*:
+
+| Tệp | Loại tệp | Nội dung |
+|---|---|---|
+| `1_danh_sach_lop_cuoi_ky.csv` | danh_sach_lop | Tỷ lệ chuyên cần cuối kỳ; 3 sinh viên dưới 70% |
+| `2_diem_chuyen_can_excel.csv` | diem_theo_bai | Chuyên cần, thái độ – bảng Excel mỗi sinh viên một dòng |
+| `3_diem_kiem_tra_thuc_hanh_lms.csv` | diem_chi_tiet | Chấm nốt 3 bài kiểm tra, 2 bài làm bù (lần 2), bài tập thực hành kèm mã lỗi |
+| `4_diem_thi_cuoi_ky_lan1_lms.csv` | diem_chi_tiet | Thi lần 1: đề D1/D2, chuỗi phương án trắc nghiệm, 2 vòng chấm tự luận, vắng thi, cấm thi |
+| `5_diem_thi_lan2_lms.csv` | diem_chi_tiet | Thi lần 2 (đề D3/D4) |
+| `6_tep_co_loi_de_thu.csv` | diem_chi_tiet | 11 loại lỗi cố ý – chỉ để thử bộ kiểm tra, không nhập được |
+
+Sau khi nhập: lớp N02 có CLO2, CLO3 dưới mục tiêu; mục “Chất lượng đề và chấm” phát hiện câu thứ 5 của đề D2 ghi nhầm đáp án (độ phân biệt âm) và cán bộ chấm vòng 2 chặt hơn ở câu TL1 lớp N01. `tests/clo-chay-thu.test.mjs` nhập đúng các tệp này rồi đối chiếu kết quả bộ tính với một cách tính độc lập (từng sinh viên, từng CLO, cả hai chế độ lần đầu / sau đánh giá lại). Dữ liệu nhập chỉ lưu trong trình duyệt; muốn quay lại dữ liệu mô phỏng ban đầu: M0 › Dữ liệu và công bố › Khôi phục dữ liệu mô phỏng.
 
 **Gắn với dashboard BL (một nền tảng):** cùng danh mục lớp, giảng viên, sinh viên (mã nghiên cứu) và phân quyền theo vai trò – phạm vi; điểm học vụ ở M3 của các lớp có dữ liệu CLO được tính từ điểm chi tiết (một nguồn số liệu); trang lớp ở M2 có thẻ “Kết quả học tập theo CLO”, M3 có cột kết quả CLO; kế hoạch cải tiến CLO lưu chung kho PDCA (hiện ở M2 và M0 › Xuất minh chứng PDCA), mỗi biện pháp gắn một phương diện giảng dạy BL và lấy từ cùng thư viện biện pháp đã duyệt; M6 đối chiếu chỉ báo khảo sát “Tôi đạt được chuẩn đầu ra của học phần”, PS1 “Đánh giá, phản hồi”, điểm gắn kết với kết quả CLO đo được; thông báo, trợ lý AI (dữ kiện có mã, bộ kiểm số), nhật ký xem dữ liệu sinh viên và tham số ở M0 › Cấu hình dùng chung.
 

@@ -77,6 +77,18 @@ test('điểm CLO, độ bao phủ minh chứng, trạng thái và điểm học
   assert.equal(init.students[2].clo.CLO2.status, 'not_achieved');
 });
 
+test('đánh giá lại một phần (chỉ chấm lại một câu): điểm bài, điểm học phần giữ điểm các câu không chấm lại', () => {
+  const partial = [...subs, { c: 'L1', s: 'S1', a: 'CK', t: 2, f: 'D2', st: 'graded', pts: { d: 3 } }];
+  const s1 = classResult({ rv, roster, subs: partial, mode: 'latest' }).students[0];
+  // c giữ 4 điểm của lần 1, d lấy 3 điểm của lần 2 → bài cuối kỳ 10 × 7/10 = 7 (không phải 3)
+  assert.equal(s1.values['CK:c'], 4);
+  assert.equal(s1.values['CK:d'], 3);
+  assert.equal(s1.exam, 7);
+  assert.equal(s1.course, 6.2); // 0,4 × 5 + 0,6 × 7
+  assert.equal(s1.clo.CLO2.score, 6.67); // 10 × (0,15·0,8 + 0,30·0,6)/0,45
+  assert.equal(classResult({ rv, roster, subs: partial, mode: 'initial' }).students[0].exam, 5);
+});
+
 test('phễu minh chứng: thuộc diện → đã nộp → đã chấm → đủ minh chứng → đạt', () => {
   const res = classResult({ rv, roster, subs, mode: 'latest' });
   const f = evidenceFunnel(res, rv, 'CLO2');
@@ -220,6 +232,17 @@ test('điểm theo bài dạng bảng Excel: ô trống = thiếu điểm, cột
   const back = validateCloCsv('diem_chi_tiet', out, cloValidationContext(next));
   assert.equal(back.ok, true, JSON.stringify(back.errors.slice(0, 3)));
   assert.equal(back.records.length, 2);
+});
+
+test('tệp điểm chỉ có một phần lớp: không báo thiếu bài với sinh viên đã có điểm, nhắc chọn “Bổ sung”', () => {
+  const head = 'ma_nghien_cuu;ma_lop_hp;ma_bai_danh_gia;lan_thi;ma_de;a;b';
+  const base = applyCloImport(dsLike, 'diem_theo_bai', validateCloCsv('diem_theo_bai', `${head}\nNC-001;L1;QT;1;Q;2;3\nNC-002;L1;QT;1;Q;4;6`, cloValidationContext(dsLike)).records);
+  const r = validateCloCsv('diem_theo_bai', `${head}\nNC-002;L1;QT;1;Q;3;5`, cloValidationContext(base));
+  assert.equal(r.ok, true);
+  assert.equal(r.issues.partial, 1); // NC-001 đã có điểm từ trước
+  assert.equal(r.issues.absentWork, 1); // NC-003 chưa có điểm ở đâu cả
+  assert.match(r.warnings.find((w) => w.issue === 'absentWork').message, /NC-003/);
+  assert.doesNotMatch(r.warnings.find((w) => w.issue === 'absentWork').message, /NC-001/);
 });
 
 test('nhập CLO và ma trận tạo bản nháp chờ phê duyệt; trọng số phải cộng đủ 100%', () => {

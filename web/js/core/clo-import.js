@@ -80,6 +80,7 @@ export const ISSUE_LABELS = {
   privacy: 'Có vẻ là mã sinh viên thật',
   total: 'Tổng điểm không khớp',
   absentWork: 'Thiếu bài (cảnh báo)',
+  partial: 'Tệp chỉ có một phần lớp (cảnh báo)',
 };
 
 // Ngữ cảnh kiểm tra: danh mục lớp, bộ quy tắc, danh sách lớp, điểm đã có (để xét lần thi 2).
@@ -449,13 +450,17 @@ function finishScores(report, ctx, groups) {
     if (!byClassAssessment.has(k)) byClassAssessment.set(k, new Set());
     byClassAssessment.get(k).add(g.s);
   }
-  // Thiếu bài: sinh viên thuộc diện đánh giá nhưng không có dòng nào cho bài lần 1 trong tệp.
+  // Thiếu bài: sinh viên thuộc diện đánh giá chưa có bài lần 1 – cả trong tệp lẫn trong dữ liệu đã nhập.
+  // Tệp chỉ có một phần lớp (ví dụ vài bài chấm muộn) thì nhắc chọn "Bổ sung" để giữ điểm đã có của các bạn còn lại.
   for (const [k, set] of byClassAssessment) {
     const [c, a, t] = k.split('|');
     if (t !== '1') continue;
     const roster = (ctx.rosters[c] || []).filter((r) => r.st !== 'withdrawn');
-    const absent = roster.filter((r) => !set.has(r.s));
-    if (absent.length) push(report, 'warning', null, 'ma_nghien_cuu', `Lớp ${c} – bài ${a}: ${absent.length} sinh viên thuộc diện đánh giá chưa có dòng điểm (${absent.slice(0, 5).map((r) => r.s).join(', ')}${absent.length > 5 ? '…' : ''})`, 'absentWork');
+    const notInFile = roster.filter((r) => !set.has(r.s));
+    const absent = notInFile.filter((r) => !ctx.attempt1?.has(`${c}|${r.s}|${a}`));
+    const kept = notInFile.length - absent.length;
+    if (absent.length) push(report, 'warning', null, 'ma_nghien_cuu', `Lớp ${c} – bài ${a}: ${absent.length} sinh viên thuộc diện đánh giá chưa có điểm, cả trong tệp lẫn dữ liệu đã nhập (${absent.slice(0, 5).map((r) => r.s).join(', ')}${absent.length > 5 ? '…' : ''})`, 'absentWork');
+    if (kept) push(report, 'warning', null, 'ma_nghien_cuu', `Lớp ${c} – bài ${a}: tệp có ${set.size} sinh viên, ${kept} sinh viên khác đã có điểm từ trước – chọn “Bổ sung” để giữ điểm của họ (“Thay thế” sẽ xóa)`, 'partial');
   }
   report.summary = {
     'bài làm': report.records.length,

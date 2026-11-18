@@ -127,7 +127,7 @@ export function cloBarOption({ bars, target }) {
         barMaxWidth: 22,
         data: bars.map((b) => ({ value: b.notAssessed || b.rate === null ? null : +(b.rate * 100).toFixed(1), itemStyle: { color: statusColor(b.status === 'none' ? 'na' : b.status), borderRadius: [0, 4, 4, 0] } })),
         label: { show: true, position: 'right', color: t.ink2, fontSize: 11, formatter: (p) => { const b = bars[p.dataIndex]; return b.notAssessed ? 'chưa đánh giá' : `${fmtPct(b.rate)} · n ${b.n}`; } },
-        markLine: { silent: true, symbol: 'none', data: [{ xAxis: target * 100 }], lineStyle: { color: t.ink2, type: [4, 4], width: 1.5 }, label: { formatter: `mục tiêu ${fmtPct(target)}`, color: t.ink2, fontSize: 10, position: 'insideEndTop' } },
+        markLine: { silent: true, symbol: 'none', data: [{ xAxis: target * 100 }], lineStyle: { color: t.ink2, type: [4, 4], width: 1.5 }, label: { formatter: `mục tiêu ${fmtPct(target)}`, color: t.ink2, fontSize: 10, position: 'start', distance: 4 } },
       },
     ],
   };
