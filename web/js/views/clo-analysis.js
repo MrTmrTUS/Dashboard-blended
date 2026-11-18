@@ -315,19 +315,18 @@ function qualityView(ctx, d) {
         title: 'Đối chiếu kết quả chấm giữa hai cán bộ chấm',
         sub: `Phần tự luận bài thi cuối kỳ chấm 2 vòng độc lập · dung sai ${fmtScore(q.raters.tol, 1)} điểm/câu · ${fmtInt(q.raters.nScripts)} bài · cặp chấm: ${pairs.join('; ') || '–'}`,
         body: q.raters.rows.some((r) => r.n)
-          ? html`${dataTable({
+          ? html`<div class="rater-table">${dataTable({
               compact: true,
               columns: [
-                { label: 'Câu', render: (r) => html`<span title="${r.label}"><b>${r.code}</b><br><span class="caption" style="white-space:nowrap">${r.label.replace(/^Tự luận câu \w+ – /, '').slice(0, 30)}${r.label.length > 30 ? '…' : ''}</span></span>` },
+                { label: 'Câu', render: (r) => html`<span title="${r.label}"><b>${r.code}</b><br><span class="caption">${r.label.replace(/^Tự luận câu \w+ – /, '').slice(0, 30)}${r.label.length > 30 ? '…' : ''}</span></span>` },
                 { label: 'n', num: true, render: (r) => fmtInt(r.n) },
                 { label: 'Lệch TB (vòng 2 − vòng 1)', num: true, render: (r) => fmtSigned(r.meanDiff, 2) },
-                { label: 'Trùng khớp', num: true, render: (r) => fmtPct(r.exact) },
-                { label: 'Lệch ≤ 0,25', num: true, render: (r) => fmtPct(r.within) },
+                { label: 'Trùng khớp · lệch ≤ 0,25', num: true, render: (r) => `${fmtPct(r.exact)} · ${fmtPct(r.within)}` },
                 { label: `Lệch > ${fmtNum(q.raters.tol, 1)}`, render: (r) => statusChip(r.over > 0.15 ? 'alert' : r.over > 0.05 ? 'warn' : 'ok', { label: `${fmtPct(r.over)} (${r.nOver})` }) },
                 { label: 'r', num: true, render: (r) => fmtNum(r.r, 2) },
               ],
               rows: q.raters.rows,
-            })}
+            })}</div>
             ${q.ratersClass.scripts.length && d.studentLevel ? html`<p class="small" style="margin-top:8px"><b>Bài của lớp cần chấm thống nhất:</b> ${q.ratersClass.scripts.map((s) => `${s.s} (${s.diffs.filter((x) => Math.abs(x.d) > q.raters.tol).map((x) => `${x.code} ${fmtSigned(x.d, 2)}`).join(', ')})`).join('; ')}</p>` : q.ratersClass.scripts.length ? html`<p class="small" style="margin-top:8px">Lớp này có <b>${q.ratersClass.scripts.length}</b> bài lệch quá dung sai (danh sách bài chỉ giảng viên phụ trách xem được).</p>` : ''}`
           : emptyState({ title: 'Chưa có dữ liệu chấm 2 vòng', text: 'Nhập cột diem_cham_1, diem_cham_2 trong tệp điểm chi tiết.' }),
         foot: html`<span>Lệch TB âm: cán bộ chấm vòng 2 chặt hơn. Tỷ lệ bài lệch quá dung sai cao gợi ý cần đáp án chi tiết và chấm thử chung.</span>`,

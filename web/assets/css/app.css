@@ -1127,6 +1127,11 @@ main {
   padding: 6px 8px;
 }
 
+/* Bảng đối chiếu hai cán bộ chấm nằm trong thẻ 60%: tiêu đề cột được xuống dòng để không phải cuộn ngang */
+.rater-table .table thead th {
+  white-space: normal;
+}
+
 .table .row-muted td {
   color: var(--muted);
 }
